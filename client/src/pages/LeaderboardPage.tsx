@@ -265,7 +265,7 @@ export const LeaderboardPage: React.FC = () => {
                       ) : (
                         <div className="flex items-baseline space-x-1.5">
                           <span className="font-extrabold text-emerald-400 text-sm">
-                            {item.prayerCompleted}/{item.totalTargetPrayers || (timeframe === 'today' ? 5 : 35)}
+                            {item.prayerCompleted}/{item.totalTargetPrayers || (timeframe === 'today' ? 5 : timeframe === 'this_week' ? 35 : 155)}
                           </span>
                           <span className="text-[11px] font-medium text-slate-400">
                             ({item.prayerConsistency})

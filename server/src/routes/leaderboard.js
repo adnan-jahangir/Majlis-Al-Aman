@@ -12,21 +12,28 @@ router.get('/', optionalAuth, async (req, res) => {
     const currentUserId = req.user ? req.user.id : null;
 
     let startDateStr = null;
-    let totalTargetDays = 1;
+    let elapsedTargetDays = 1;
+    let periodTargetPrayers = 5;
+
     const now = new Date();
     const todayStr = format(now, 'yyyy-MM-dd');
 
     if (timeframe === 'today') {
       startDateStr = todayStr;
-      totalTargetDays = 1;
+      elapsedTargetDays = 1;
+      periodTargetPrayers = 5;
     } else if (timeframe === 'this_week') {
       const weekStart = startOfWeek(now, { weekStartsOn: 1 }); // Monday
       startDateStr = format(weekStart, 'yyyy-MM-dd');
-      totalTargetDays = Math.max(1, Math.round((now.getTime() - weekStart.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+      const dayOfWeek = now.getDay() === 0 ? 7 : now.getDay();
+      elapsedTargetDays = Math.max(1, dayOfWeek);
+      periodTargetPrayers = 35; // 7 days * 5 prayers
     } else if (timeframe === 'this_month') {
       const monthStart = startOfMonth(now);
       startDateStr = format(monthStart, 'yyyy-MM-dd');
-      totalTargetDays = Math.max(1, now.getDate());
+      elapsedTargetDays = Math.max(1, now.getDate());
+      const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+      periodTargetPrayers = daysInMonth * 5; // e.g. 31 * 5 = 155 prayers
     }
 
     // Fetch all eligible users who have appear_on_leaderboard enabled
@@ -96,24 +103,24 @@ router.get('/', optionalAuth, async (req, res) => {
       // Calculate score based on timeframe
       let score = 0;
       let prayerConsistency = 0;
+      let targetPrayersForPeriod = periodTargetPrayers;
 
       if (timeframe === 'today') {
         prayerConsistency = Math.round((prayerCompletedCount / 5) * 100);
         score = Math.round((prayerCompletedCount * 16) + (quranPagesCount * 3) + Math.min(20, (user.current_streak || 0) * 2));
       } else {
-        let maxPossiblePrayers = totalTargetDays * 5;
+        let maxElapsedPrayers = elapsedTargetDays * 5;
         if (timeframe === 'all_time') {
           const activeDays = Math.max(1, user.total_active_days || 1);
-          maxPossiblePrayers = activeDays * 5;
+          maxElapsedPrayers = activeDays * 5;
+          targetPrayersForPeriod = maxElapsedPrayers;
         }
 
-        prayerConsistency = Math.min(100, Math.round((prayerCompletedCount / maxPossiblePrayers) * 100));
+        prayerConsistency = Math.min(100, Math.round((prayerCompletedCount / maxElapsedPrayers) * 100));
         const streakBonus = Math.min(20, (user.current_streak || 0) * 2);
         const quranBonus = Math.min(30, quranDaysCount * 5);
         score = Math.round(prayerConsistency * 0.7 + quranBonus + streakBonus);
       }
-
-      const totalTargetPrayers = timeframe === 'today' ? 5 : (timeframe === 'all_time' ? (Math.max(1, user.total_active_days || 1) * 5) : (totalTargetDays * 5));
 
       leaderboard.push({
         id: user.id,
@@ -123,7 +130,7 @@ router.get('/', optionalAuth, async (req, res) => {
         prayerConsistency: user.show_prayer_stats ? `${prayerConsistency}%` : 'Private',
         prayerConsistencyVal: prayerConsistency,
         prayerCompleted: user.show_prayer_stats ? prayerCompletedCount : 0,
-        totalTargetPrayers: user.show_prayer_stats ? totalTargetPrayers : 5,
+        totalTargetPrayers: user.show_prayer_stats ? targetPrayersForPeriod : 5,
         quranDays: user.show_quran_stats ? quranDaysCount : 0,
         quranPages: user.show_quran_stats ? quranPagesCount : 0,
         streak: user.current_streak || 0,
