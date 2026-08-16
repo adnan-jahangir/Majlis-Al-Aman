@@ -169,7 +169,35 @@ export interface LeaderboardItem {
   streak: number;
   score: number;
   isCurrentUser: boolean;
-  isPrivate: boolean;
+  isPrivate?: boolean;
+}
+
+export interface LeaderboardUserDetail {
+  user: {
+    id: number;
+    name: string;
+    username: string;
+    avatar?: string;
+    bio?: string;
+    memberSince?: string;
+    streak: {
+      current_streak: number;
+      longest_streak: number;
+      total_active_days: number;
+    };
+  };
+  privacy: {
+    showPrayerStats: boolean;
+    showQuranStats: boolean;
+  };
+  todayPrayers: Array<{ name: PrayerName; status: PrayerStatus }>;
+  todayCompletedCount: number;
+  quranStats: {
+    todayPages: number;
+    todayDuration: number;
+    totalPages: number;
+  };
+  achievements: string[];
 }
 
 export interface CommunityComment {

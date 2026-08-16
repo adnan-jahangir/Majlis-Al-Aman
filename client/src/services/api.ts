@@ -9,6 +9,7 @@ import {
   DayDetailResponse,
   StatsResponse,
   LeaderboardItem,
+  LeaderboardUserDetail,
   CommunityPost,
   CalculatedPrayerTimes,
   AdminMetrics,
@@ -102,8 +103,10 @@ export const api = {
   getStats: (timeframe: 'week' | 'month' | 'year' | 'all' = 'month') => request<StatsResponse>(`/stats?timeframe=${timeframe}`),
 
   // Leaderboard
-  getLeaderboard: (timeframe: 'this_week' | 'this_month' | 'all_time') =>
+  getLeaderboard: (timeframe: 'today' | 'this_week' | 'this_month' | 'all_time' = 'today') =>
     request<{ timeframe: string; leaderboard: LeaderboardItem[]; userRank: LeaderboardItem | null }>(`/leaderboard?timeframe=${timeframe}`),
+  getUserLeaderboardDetail: (userId: number) =>
+    request<LeaderboardUserDetail>(`/leaderboard/user/${userId}`),
 
   // Community
   getCommunityPosts: () => request<CommunityPost[]>('/community/posts'),

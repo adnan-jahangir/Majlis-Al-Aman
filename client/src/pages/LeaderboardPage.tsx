@@ -1,15 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { Trophy, Flame, Lock, User as UserIcon, Sparkles } from 'lucide-react';
+import { Trophy, Flame, Lock, User as UserIcon, Sparkles, ChevronRight } from 'lucide-react';
 import { api } from '../services/api';
-import { LeaderboardItem } from '../types';
+import { LeaderboardItem, LeaderboardUserDetail } from '../types';
 import { useAuth } from '../context/AuthContext';
+import { UserProfileModal } from '../components/UserProfileModal';
 
 export const LeaderboardPage: React.FC = () => {
   const { user } = useAuth();
-  const [timeframe, setTimeframe] = useState<'this_week' | 'this_month' | 'all_time'>('this_week');
+  const [timeframe, setTimeframe] = useState<'today' | 'this_week' | 'this_month' | 'all_time'>('today');
   const [leaderboard, setLeaderboard] = useState<LeaderboardItem[]>([]);
   const [userRank, setUserRank] = useState<LeaderboardItem | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  // Selected User Modal State
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [selectedUserDetail, setSelectedUserDetail] = useState<LeaderboardUserDetail | null>(null);
+  const [isDetailLoading, setIsDetailLoading] = useState<boolean>(false);
 
   useEffect(() => {
     setIsLoading(true);
@@ -21,6 +27,24 @@ export const LeaderboardPage: React.FC = () => {
       .catch(console.error)
       .finally(() => setIsLoading(false));
   }, [timeframe]);
+
+  const handleOpenUserDetail = async (userId: number) => {
+    setSelectedUserId(userId);
+    setIsDetailLoading(true);
+    try {
+      const detail = await api.getUserLeaderboardDetail(userId);
+      setSelectedUserDetail(detail);
+    } catch (err) {
+      console.error('Failed to load user leaderboard detail:', err);
+    } finally {
+      setIsDetailLoading(false);
+    }
+  };
+
+  const handleCloseUserDetail = () => {
+    setSelectedUserId(null);
+    setSelectedUserDetail(null);
+  };
 
   const getRankBadge = (rank: number) => {
     if (rank === 1) return <span className="text-2xl">🥇</span>;
@@ -50,9 +74,10 @@ export const LeaderboardPage: React.FC = () => {
           </p>
         </div>
 
-        {/* Timeframe Filter Tabs */}
-        <div className="flex rounded-2xl bg-slate-950 p-1.5 border border-slate-800 self-start sm:self-auto">
+        {/* Timeframe Filter Tabs (With Today Filter) */}
+        <div className="flex flex-wrap rounded-2xl bg-slate-950 p-1.5 border border-slate-800 self-start sm:self-auto gap-1">
           {[
+            { id: 'today', label: 'Today • আজ' },
             { id: 'this_week', label: 'This Week' },
             { id: 'this_month', label: 'This Month' },
             { id: 'all_time', label: 'All Time' }
@@ -60,7 +85,7 @@ export const LeaderboardPage: React.FC = () => {
             <button
               key={tab.id}
               onClick={() => setTimeframe(tab.id as any)}
-              className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all ${
+              className={`px-3.5 py-2 text-xs font-semibold rounded-xl transition-all ${
                 timeframe === tab.id
                   ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-950/40'
                   : 'text-slate-400 hover:text-white'
@@ -72,18 +97,22 @@ export const LeaderboardPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Top 3 Podium Highlights (only shown if there are real active participants) */}
+      {/* Top 3 Podium Highlights (Interactive Clickable Cards) */}
       {leaderboard.length >= 3 && leaderboard[0].score > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
           {/* 2nd Place */}
-          <div className="p-6 rounded-3xl bg-slate-900/70 border border-slate-700/80 flex flex-col items-center text-center order-2 md:order-1 relative overflow-hidden">
+          <div
+            onClick={() => handleOpenUserDetail(leaderboard[1].id)}
+            className="p-6 rounded-3xl bg-slate-900/70 hover:bg-slate-900 border border-slate-700/80 flex flex-col items-center text-center order-2 md:order-1 relative overflow-hidden cursor-pointer transition-all duration-200 group hover:scale-[1.02] shadow-xl"
+            title="Click to view user's prayer & Quran progress"
+          >
             <span className="text-3xl mb-2">🥈</span>
             <img
               src={leaderboard[1].avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${leaderboard[1].username}`}
               alt={leaderboard[1].name}
-              className="w-14 h-14 rounded-2xl object-cover border-2 border-slate-400 mb-2"
+              className="w-14 h-14 rounded-2xl object-cover border-2 border-slate-400 mb-2 group-hover:border-emerald-400 transition-colors"
             />
-            <h3 className="font-bold text-base text-white">{leaderboard[1].name}</h3>
+            <h3 className="font-bold text-base text-white group-hover:text-emerald-300 transition-colors">{leaderboard[1].name}</h3>
             <p className="text-xs text-slate-400">@{leaderboard[1].username}</p>
             <div className="mt-4 flex items-center gap-3 text-xs">
               <span className="px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-300 font-bold border border-emerald-500/30">
@@ -93,10 +122,17 @@ export const LeaderboardPage: React.FC = () => {
                 🔥 {leaderboard[1].streak}d
               </span>
             </div>
+            <span className="mt-3 text-[10px] text-slate-500 font-medium group-hover:text-emerald-400 transition-colors">
+              Click to view progress →
+            </span>
           </div>
 
           {/* 1st Place */}
-          <div className="p-6 rounded-3xl bg-gradient-to-b from-amber-500/15 via-slate-900 to-slate-900 border-2 border-amber-500/50 flex flex-col items-center text-center order-1 md:order-2 shadow-2xl shadow-amber-950/30 relative overflow-hidden">
+          <div
+            onClick={() => handleOpenUserDetail(leaderboard[0].id)}
+            className="p-6 rounded-3xl bg-gradient-to-b from-amber-500/15 via-slate-900 to-slate-900 hover:from-amber-500/25 border-2 border-amber-500/50 flex flex-col items-center text-center order-1 md:order-2 shadow-2xl shadow-amber-950/30 relative overflow-hidden cursor-pointer transition-all duration-200 group hover:scale-[1.02]"
+            title="Click to view champion's prayer & Quran progress"
+          >
             <span className="text-4xl mb-2">🥇</span>
             <div className="relative">
               <img
@@ -106,7 +142,7 @@ export const LeaderboardPage: React.FC = () => {
               />
               <span className="absolute -top-2 -right-2 text-xs">👑</span>
             </div>
-            <h3 className="font-bold text-lg text-white mt-1">{leaderboard[0].name}</h3>
+            <h3 className="font-bold text-lg text-white mt-1 group-hover:text-amber-300 transition-colors">{leaderboard[0].name}</h3>
             <p className="text-xs text-amber-300 font-medium">@{leaderboard[0].username}</p>
             <div className="mt-4 flex items-center gap-3 text-xs">
               <span className="px-3 py-1 rounded-xl bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/40">
@@ -116,17 +152,24 @@ export const LeaderboardPage: React.FC = () => {
                 🔥 {leaderboard[0].streak}d
               </span>
             </div>
+            <span className="mt-3 text-[10px] text-amber-400/90 font-medium group-hover:text-amber-200 transition-colors">
+              Click to view progress →
+            </span>
           </div>
 
           {/* 3rd Place */}
-          <div className="p-6 rounded-3xl bg-slate-900/70 border border-slate-700/80 flex flex-col items-center text-center order-3 relative overflow-hidden">
+          <div
+            onClick={() => handleOpenUserDetail(leaderboard[2].id)}
+            className="p-6 rounded-3xl bg-slate-900/70 hover:bg-slate-900 border border-slate-700/80 flex flex-col items-center text-center order-3 relative overflow-hidden cursor-pointer transition-all duration-200 group hover:scale-[1.02] shadow-xl"
+            title="Click to view user's prayer & Quran progress"
+          >
             <span className="text-3xl mb-2">🥉</span>
             <img
               src={leaderboard[2].avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${leaderboard[2].username}`}
               alt={leaderboard[2].name}
-              className="w-14 h-14 rounded-2xl object-cover border-2 border-amber-700 mb-2"
+              className="w-14 h-14 rounded-2xl object-cover border-2 border-amber-700 mb-2 group-hover:border-emerald-400 transition-colors"
             />
-            <h3 className="font-bold text-base text-white">{leaderboard[2].name}</h3>
+            <h3 className="font-bold text-base text-white group-hover:text-emerald-300 transition-colors">{leaderboard[2].name}</h3>
             <p className="text-xs text-slate-400">@{leaderboard[2].username}</p>
             <div className="mt-4 flex items-center gap-3 text-xs">
               <span className="px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-300 font-bold border border-emerald-500/30">
@@ -136,6 +179,9 @@ export const LeaderboardPage: React.FC = () => {
                 🔥 {leaderboard[2].streak}d
               </span>
             </div>
+            <span className="mt-3 text-[10px] text-slate-500 font-medium group-hover:text-emerald-400 transition-colors">
+              Click to view progress →
+            </span>
           </div>
         </div>
       )}
@@ -162,9 +208,9 @@ export const LeaderboardPage: React.FC = () => {
               <thead className="text-[11px] uppercase tracking-wider text-slate-400 bg-slate-950/60 border-b border-slate-800 font-bold">
                 <tr>
                   <th className="py-4 px-5">Rank</th>
-                  <th className="py-4 px-5">User</th>
+                  <th className="py-4 px-5">User (Click to View)</th>
                   <th className="py-4 px-5">Prayer Consistency</th>
-                  <th className="py-4 px-5">Quran Days</th>
+                  <th className="py-4 px-5">Quran Days / Pages</th>
                   <th className="py-4 px-5">Streak</th>
                   <th className="py-4 px-5 text-right">Score</th>
                 </tr>
@@ -173,11 +219,13 @@ export const LeaderboardPage: React.FC = () => {
                 {leaderboard.map((item) => (
                   <tr
                     key={item.id}
-                    className={`transition-colors ${
+                    onClick={() => handleOpenUserDetail(item.id)}
+                    className={`transition-colors cursor-pointer group ${
                       item.isCurrentUser
-                        ? 'bg-emerald-950/30 hover:bg-emerald-950/40 font-semibold'
-                        : 'hover:bg-slate-800/40'
+                        ? 'bg-emerald-950/30 hover:bg-emerald-950/50 font-semibold'
+                        : 'hover:bg-slate-800/60'
                     }`}
+                    title={`Click to inspect @${item.username}'s Namaz & Quran progress`}
                   >
                     {/* Rank */}
                     <td className="py-4 px-5 whitespace-nowrap">
@@ -190,11 +238,11 @@ export const LeaderboardPage: React.FC = () => {
                         <img
                           src={item.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${item.username}`}
                           alt={item.name}
-                          className="w-9 h-9 rounded-xl object-cover border border-slate-700"
+                          className="w-9 h-9 rounded-xl object-cover border border-slate-700 group-hover:border-emerald-400 transition-colors"
                         />
                         <div>
                           <div className="flex items-center space-x-2">
-                            <span className="font-bold text-white text-sm">{item.name}</span>
+                            <span className="font-bold text-white text-sm group-hover:text-emerald-300 transition-colors">{item.name}</span>
                             {item.isCurrentUser && (
                               <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-bold border border-emerald-500/30">
                                 You
@@ -213,10 +261,10 @@ export const LeaderboardPage: React.FC = () => {
                       </span>
                     </td>
 
-                    {/* Quran Days */}
+                    {/* Quran Days / Pages */}
                     <td className="py-4 px-5 whitespace-nowrap">
                       <span className="text-slate-300">
-                        {item.quranDays > 0 ? `${item.quranDays} days` : '—'}
+                        {item.quranPages > 0 ? `${item.quranPages} pgs (${item.quranDays}d)` : '—'}
                       </span>
                     </td>
 
@@ -230,9 +278,12 @@ export const LeaderboardPage: React.FC = () => {
 
                     {/* Score */}
                     <td className="py-4 px-5 whitespace-nowrap text-right">
-                      <span className="px-3 py-1 rounded-xl bg-slate-800 border border-slate-700 text-white font-black text-xs">
-                        {item.score} pts
-                      </span>
+                      <div className="flex items-center justify-end space-x-2">
+                        <span className="px-3 py-1 rounded-xl bg-slate-800 border border-slate-700 text-white font-black text-xs group-hover:border-emerald-500/40">
+                          {item.score} pts
+                        </span>
+                        <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 transition-colors" />
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -242,12 +293,20 @@ export const LeaderboardPage: React.FC = () => {
         )}
       </div>
 
+      {/* User Profile Detail Modal */}
+      <UserProfileModal
+        isOpen={!!selectedUserId}
+        onClose={handleCloseUserDetail}
+        userDetail={selectedUserDetail}
+        isLoading={isDetailLoading}
+      />
+
       {/* Privacy Notice Card */}
       <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
         <div className="flex items-center space-x-3">
           <Lock className="w-4 h-4 text-emerald-400 shrink-0" />
           <span>
-            You can hide yourself or specific spiritual stats from the leaderboard at any time in <strong>Settings → Privacy</strong>.
+            Click on any user in the leaderboard to view their daily Namaz & Quran tilawah stats! You can control your own privacy in <strong>Settings → Privacy</strong>.
           </span>
         </div>
       </div>
