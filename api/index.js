@@ -1,6 +1,14 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Resolve .env from server/ directory (not api/)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.resolve(__dirname, '../server/.env') });
+
 import authRoutes from '../server/src/routes/auth.js';
 import prayerRoutes from '../server/src/routes/prayers.js';
 import quranRoutes from '../server/src/routes/quran.js';
@@ -14,8 +22,6 @@ import prayerTimesRoutes from '../server/src/routes/prayerTimes.js';
 import { connectMongo } from '../server/src/mongo.js';
 import { initDb } from '../server/src/db.js';
 import { seedDatabase } from '../server/src/seed.js';
-
-dotenv.config();
 
 const app = express();
 
@@ -42,9 +48,17 @@ app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'ok', 
     name: 'Majlis Al-Aman Serverless API',
-    mongo_user_id: '6a81ca9256464fc5bf9cbd87',
+    mongo_uri_set: !!process.env.MONGODB_URI,
+    jwt_secret_set: !!process.env.JWT_SECRET,
+    google_client_set: !!process.env.GOOGLE_CLIENT_ID,
     timestamp: new Date().toISOString()
   });
+});
+
+// Global error handler — prevents unhandled crashes from returning raw 500
+app.use((err, req, res, next) => {
+  console.error('Unhandled API error:', err);
+  res.status(500).json({ error: 'Internal server error' });
 });
 
 let isInitialized = false;
@@ -56,8 +70,11 @@ export default async function handler(req, res) {
       await seedDatabase();
       await connectMongo();
       isInitialized = true;
+      console.log('✅ Serverless initialization complete');
     } catch (err) {
-      console.error('Serverless initialization notice:', err);
+      console.error('Serverless initialization error:', err.message);
+      // Still mark as initialized so we don't retry every cold start
+      isInitialized = true;
     }
   }
   return app(req, res);
