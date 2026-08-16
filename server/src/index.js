@@ -73,8 +73,8 @@ app.use((err, req, res, next) => {
 Promise.all([seedDatabase(), connectMongo()])
   .then(async () => {
     await seedMongoUser();
-    app.listen(PORT, () => {
-      console.log(`✨ Majlis Al-Aman Server running on http://localhost:${PORT}`);
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`✨ Majlis Al-Aman Server running on http://0.0.0.0:${PORT}`);
       console.log(`📌 Primary MongoDB ID Configured: 6a81ca9256464fc5bf9cbd87`);
     });
   })
