@@ -14,8 +14,7 @@ import {
   AdminMetrics,
   Announcement
 } from '../types';
-
-const API_BASE = '/api';
+import { API_BASE } from '../config';
 
 export const getAuthToken = (): string | null => {
   return localStorage.getItem('majlis_token');
