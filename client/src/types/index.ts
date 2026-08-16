@@ -164,6 +164,7 @@ export interface LeaderboardItem {
   prayerConsistency: string;
   prayerConsistencyVal: number;
   prayerCompleted: number;
+  totalTargetPrayers?: number;
   quranDays: number;
   quranPages: number;
   streak: number;

@@ -213,7 +213,7 @@ export const LeaderboardPage: React.FC = () => {
                 <tr>
                   <th className="py-4 px-5">Rank</th>
                   <th className="py-4 px-5">User (Click to View)</th>
-                  <th className="py-4 px-5">Prayer Consistency</th>
+                  <th className="py-4 px-5">Prayer Wakto & Consistency</th>
                   <th className="py-4 px-5">Quran Days / Pages</th>
                   <th className="py-4 px-5">Streak</th>
                   <th className="py-4 px-5 text-right">Score</th>
@@ -258,11 +258,20 @@ export const LeaderboardPage: React.FC = () => {
                       </div>
                     </td>
 
-                    {/* Prayer Consistency */}
+                    {/* Prayer Wakto & Consistency */}
                     <td className="py-4 px-5 whitespace-nowrap">
-                      <span className="font-bold text-emerald-400">
-                        {item.prayerConsistency}
-                      </span>
+                      {item.prayerConsistency === 'Private' ? (
+                        <span className="text-slate-500 text-xs italic">Private</span>
+                      ) : (
+                        <div className="flex items-baseline space-x-1.5">
+                          <span className="font-extrabold text-emerald-400 text-sm">
+                            {item.prayerCompleted}/{item.totalTargetPrayers || (timeframe === 'today' ? 5 : 35)} Wakto
+                          </span>
+                          <span className="text-[11px] font-medium text-slate-400">
+                            ({item.prayerConsistency})
+                          </span>
+                        </div>
+                      )}
                     </td>
 
                     {/* Quran Days / Pages */}

@@ -113,6 +113,8 @@ router.get('/', optionalAuth, async (req, res) => {
         score = Math.round(prayerConsistency * 0.7 + quranBonus + streakBonus);
       }
 
+      const totalTargetPrayers = timeframe === 'today' ? 5 : (timeframe === 'all_time' ? (Math.max(1, user.total_active_days || 1) * 5) : (totalTargetDays * 5));
+
       leaderboard.push({
         id: user.id,
         name: user.name,
@@ -120,7 +122,8 @@ router.get('/', optionalAuth, async (req, res) => {
         avatar: user.avatar,
         prayerConsistency: user.show_prayer_stats ? `${prayerConsistency}%` : 'Private',
         prayerConsistencyVal: prayerConsistency,
-        prayerCompleted: prayerCompletedCount,
+        prayerCompleted: user.show_prayer_stats ? prayerCompletedCount : 0,
+        totalTargetPrayers: user.show_prayer_stats ? totalTargetPrayers : 5,
         quranDays: user.show_quran_stats ? quranDaysCount : 0,
         quranPages: user.show_quran_stats ? quranPagesCount : 0,
         streak: user.current_streak || 0,
