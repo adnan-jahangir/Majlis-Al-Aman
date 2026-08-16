@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Trophy, Flame, Lock, User as UserIcon, Sparkles, ChevronRight } from 'lucide-react';
+import { Trophy, Flame, Lock, User as UserIcon, Sparkles, ChevronRight, Calendar } from 'lucide-react';
 import { api } from '../services/api';
 import { LeaderboardItem, LeaderboardUserDetail } from '../types';
 import { useAuth } from '../context/AuthContext';
@@ -74,26 +74,30 @@ export const LeaderboardPage: React.FC = () => {
           </p>
         </div>
 
-        {/* Timeframe Filter Tabs (With Today Filter) */}
-        <div className="flex flex-wrap rounded-2xl bg-slate-950 p-1.5 border border-slate-800 self-start sm:self-auto gap-1">
+        {/* Timeframe Filter Tabs */}
+        <div className="flex flex-wrap rounded-2xl bg-slate-950/90 p-1.5 border border-slate-800/90 self-start sm:self-auto gap-1 shadow-inner">
           {[
-            { id: 'today', label: 'Today • আজ' },
-            { id: 'this_week', label: 'This Week' },
-            { id: 'this_month', label: 'This Month' },
-            { id: 'all_time', label: 'All Time' }
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setTimeframe(tab.id as any)}
-              className={`px-3.5 py-2 text-xs font-semibold rounded-xl transition-all ${
-                timeframe === tab.id
-                  ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-950/40'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+            { id: 'today', label: 'Today', icon: <Sparkles className="w-3.5 h-3.5" /> },
+            { id: 'this_week', label: 'This Week', icon: <Calendar className="w-3.5 h-3.5" /> },
+            { id: 'this_month', label: 'This Month', icon: <Flame className="w-3.5 h-3.5 text-amber-400" /> },
+            { id: 'all_time', label: 'All Time', icon: <Trophy className="w-3.5 h-3.5 text-amber-300" /> }
+          ].map((tab) => {
+            const isActive = timeframe === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setTimeframe(tab.id as any)}
+                className={`flex items-center space-x-2 px-4 py-2 text-xs font-bold rounded-xl transition-all duration-200 select-none ${
+                  isActive
+                    ? 'bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-400 text-slate-950 shadow-md shadow-emerald-500/25 scale-[1.02]'
+                    : 'text-slate-400 hover:text-slate-100 hover:bg-slate-900/80 border border-transparent hover:border-slate-800'
+                }`}
+              >
+                <span className={isActive ? 'text-slate-950' : 'text-slate-400'}>{tab.icon}</span>
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
