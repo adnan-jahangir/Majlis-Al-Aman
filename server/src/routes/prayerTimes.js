@@ -19,24 +19,23 @@ const METHOD_MAP = {
 
 router.get('/', (req, res) => {
   try {
-    const latitude = parseFloat(req.query.latitude || '40.7128'); // default New York
-    const longitude = parseFloat(req.query.longitude || '-74.0060');
+    const latitude = parseFloat(req.query.latitude || '23.8103'); // default Dhaka
+    const longitude = parseFloat(req.query.longitude || '90.4125');
     const dateStr = req.query.date; // Optional yyyy-MM-dd
-    const methodKey = req.query.method || 'ISNA';
-    const madhabKey = req.query.madhab || 'Standard';
+    const methodKey = req.query.method || 'Karachi';
+    const madhabKey = req.query.madhab || 'Hanafi';
 
     const coordinates = new Coordinates(latitude, longitude);
     const date = dateStr ? new Date(dateStr + 'T12:00:00') : new Date();
 
-    const params = METHOD_MAP[methodKey] || CalculationMethod.NorthAmerica();
-    if (madhabKey.toLowerCase() === 'hanafi') {
+    const params = METHOD_MAP[methodKey] || CalculationMethod.Karachi();
+    if (madhabKey.toLowerCase() === 'hanafi' || madhabKey.toLowerCase() === 'standard') {
       params.madhab = Madhab.Hanafi;
     } else {
       params.madhab = Madhab.Shafi;
     }
 
     const prayerTimes = new PrayerTimes(coordinates, date, params);
-
     const qiblaDirection = Math.round(Qibla(coordinates));
 
     const formattedTimes = {
@@ -49,12 +48,12 @@ router.get('/', (req, res) => {
     };
 
     const rawTimes = {
-      Fajr: prayerTimes.fajr,
-      Sunrise: prayerTimes.sunrise,
-      Dhuhr: prayerTimes.dhuhr,
-      Asr: prayerTimes.asr,
-      Maghrib: prayerTimes.maghrib,
-      Isha: prayerTimes.isha,
+      Fajr: prayerTimes.fajr.toISOString(),
+      Sunrise: prayerTimes.sunrise.toISOString(),
+      Dhuhr: prayerTimes.dhuhr.toISOString(),
+      Asr: prayerTimes.asr.toISOString(),
+      Maghrib: prayerTimes.maghrib.toISOString(),
+      Isha: prayerTimes.isha.toISOString(),
     };
 
     // Calculate current and next prayer
@@ -67,7 +66,7 @@ router.get('/', (req, res) => {
       nextPrayerObj = {
         name: nextPrayerName.charAt(0).toUpperCase() + nextPrayerName.slice(1),
         time: format(nextPrayerTime, 'hh:mm a'),
-        rawTime: nextPrayerTime,
+        rawTime: nextPrayerTime.toISOString(),
         remainingMs: Math.max(0, nextPrayerTime.getTime() - new Date().getTime())
       };
     }

@@ -721,7 +721,16 @@ export const DashboardPage: React.FC<{ onOpenTasbih?: () => void; onOpenQibla?: 
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {displayPrayers.map((prayer) => {
-            const time = calculatedTimes?.times[prayer.name] || '';
+            const rawIso = (calculatedTimes?.rawTimes as any)?.[prayer.name];
+            let time = calculatedTimes?.times[prayer.name] || '';
+            if (rawIso) {
+              try {
+                const d = new Date(rawIso);
+                if (!isNaN(d.getTime())) {
+                  time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+                }
+              } catch (e) {}
+            }
             const isNext = calculatedTimes?.nextPrayer?.name.toLowerCase() === prayer.name.toLowerCase();
 
             return (

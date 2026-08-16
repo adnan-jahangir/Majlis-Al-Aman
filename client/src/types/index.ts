@@ -218,6 +218,7 @@ export interface CalculatedPrayerTimes {
     Maghrib: string;
     Isha: string;
   };
+  rawTimes?: Record<string, string>;
   currentPrayer: string;
   nextPrayer: {
     name: string;
