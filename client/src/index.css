@@ -1,0 +1,121 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-sans: 'Outfit', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-arabic: 'Amiri', serif;
+    --font-calligraphy: 'Scheherazade New', 'Amiri', serif;
+    --font-cinzel: 'Cinzel', serif;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: #060911;
+  }
+}
+
+.font-arabic {
+  font-family: var(--font-arabic);
+}
+
+.font-calligraphy {
+  font-family: var(--font-calligraphy);
+}
+
+.font-cinzel {
+  font-family: var(--font-cinzel);
+}
+
+/* Sacred Islamic Arabesque & Geometric Pattern Background Overlay */
+.islamic-pattern-bg {
+  background-color: #060911;
+  background-image: 
+    radial-gradient(ellipse at top center, rgba(16, 185, 129, 0.08) 0%, transparent 60%),
+    radial-gradient(ellipse at bottom right, rgba(217, 119, 6, 0.04) 0%, transparent 50%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='%2310b981' fill-opacity='0.025'%3E%3Cpath d='M40 0l10 30h30l-24 18 9 32-25-19-25 19 9-32-24-18h30z'/%3E%3Ccircle cx='40' cy='40' r='12' fill='none' stroke='%23f59e0b' stroke-width='0.7' stroke-opacity='0.04'/%3E%3C/g%3E%3C/svg%3E");
+  background-attachment: fixed;
+}
+
+/* Spiritual Sanctuary Glass Cards */
+.spiritual-card {
+  background: linear-gradient(135deg, rgba(13, 20, 36, 0.75) 0%, rgba(8, 12, 22, 0.85) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.spiritual-card:hover {
+  border-color: rgba(16, 185, 129, 0.25);
+  box-shadow: 0 25px 50px -12px rgba(16, 185, 129, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+/* Gold Illuminated Sacred Border */
+.spiritual-gold-card {
+  background: linear-gradient(135deg, rgba(20, 24, 38, 0.8) 0%, rgba(10, 14, 25, 0.9) 100%);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  box-shadow: 0 20px 40px -15px rgba(245, 158, 11, 0.08), inset 0 1px 0 rgba(245, 158, 11, 0.2);
+}
+
+/* Islamic Floral & Arabesque Header Divider */
+.bismillah-glow {
+  text-shadow: 0 0 20px rgba(245, 158, 11, 0.4), 0 0 40px rgba(16, 185, 129, 0.2);
+}
+
+.glow-emerald {
+  box-shadow: 0 0 35px -5px rgba(16, 185, 129, 0.35);
+}
+
+.glow-gold {
+  box-shadow: 0 0 35px -5px rgba(245, 158, 11, 0.35);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(6, 9, 17, 0.8);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(30, 41, 59, 0.9);
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(16, 185, 129, 0.7);
+}
+
+/* Animated flame effect */
+@keyframes flame-flicker {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.6)); }
+  50% { transform: scale(1.08); filter: drop-shadow(0 0 16px rgba(239, 68, 68, 0.85)); }
+}
+
+.animate-flame {
+  animation: flame-flicker 2s infinite ease-in-out;
+}
+
+/* Circular Progress Animation */
+.circular-chart {
+  display: block;
+  max-width: 100%;
+}
+
+.circle-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.06);
+  stroke-width: 3.8;
+}
+
+.circle {
+  fill: none;
+  stroke-width: 3.8;
+  stroke-linecap: round;
+  transition: stroke-dasharray 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
