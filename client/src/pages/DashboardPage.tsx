@@ -44,6 +44,31 @@ const ARABIC_PRAYER_NAMES: Record<PrayerName, string> = {
 
 const DEFAULT_PRAYER_NAMES: PrayerName[] = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
 
+// Helper for local guest prayer tracking
+const getTodayDateStr = () => new Date().toISOString().split('T')[0];
+
+const getGuestPrayers = (): TodayPrayersResponse => {
+  const today = getTodayDateStr();
+  try {
+    const stored = localStorage.getItem(`majlis_guest_prayers_${today}`);
+    if (stored) return JSON.parse(stored);
+  } catch (e) {}
+  return {
+    date: today,
+    prayers: DEFAULT_PRAYER_NAMES.map(name => ({ name, status: 'pending' as PrayerStatus })),
+    completedCount: 0,
+    totalPrayers: 5,
+    completionPercentage: 0
+  };
+};
+
+const saveGuestPrayers = (data: TodayPrayersResponse) => {
+  const today = getTodayDateStr();
+  try {
+    localStorage.setItem(`majlis_guest_prayers_${today}`, JSON.stringify(data));
+  } catch (e) {}
+};
+
 export const DashboardPage: React.FC<{ onOpenTasbih?: () => void; onOpenQibla?: () => void }> = ({
   onOpenTasbih,
   onOpenQibla
@@ -51,7 +76,7 @@ export const DashboardPage: React.FC<{ onOpenTasbih?: () => void; onOpenQibla?: 
   const { user, settings, streak, refreshMe, isAuthenticated, updateUserSettings } = useAuth();
   const { showToast } = useToast();
 
-  const [prayerData, setPrayerData] = useState<TodayPrayersResponse | null>(null);
+  const [prayerData, setPrayerData] = useState<TodayPrayersResponse | null>(getGuestPrayers());
   const [quranData, setQuranData] = useState<QuranResponse | null>(null);
   const [calculatedTimes, setCalculatedTimes] = useState<CalculatedPrayerTimes | null>(null);
   const [countdownStr, setCountdownStr] = useState<string>('');
@@ -62,7 +87,7 @@ export const DashboardPage: React.FC<{ onOpenTasbih?: () => void; onOpenQibla?: 
     lng: settings?.longitude || 90.4125
   });
 
-  // Dynamic Daily Ayah & Hadith State (initialized by day of year)
+  // Dynamic Daily Ayah & Hadith State
   const initialWisdomIndex = new Date().getDate() % SPIRITUAL_COLLECTION.length;
   const [wisdomIndex, setWisdomIndex] = useState<number>(initialWisdomIndex);
 
@@ -99,7 +124,7 @@ export const DashboardPage: React.FC<{ onOpenTasbih?: () => void; onOpenQibla?: 
         latitude: lat,
         longitude: lng,
         method: method || settings?.calc_method || 'Karachi',
-        madhab: madhab || settings?.madhab || 'Standard'
+        madhab: madhab || settings?.madhab || 'Hanafi'
       });
       setCalculatedTimes(timesRes);
     } catch (err) {
@@ -172,11 +197,13 @@ export const DashboardPage: React.FC<{ onOpenTasbih?: () => void; onOpenQibla?: 
     try {
       if (isAuthenticated) {
         const [pRes, qRes] = await Promise.all([
-          api.getTodayPrayers(),
-          api.getQuranSummary()
+          api.getTodayPrayers().catch(() => null),
+          api.getQuranSummary().catch(() => null)
         ]);
-        setPrayerData(pRes);
-        setQuranData(qRes);
+        if (pRes) setPrayerData(pRes);
+        if (qRes) setQuranData(qRes);
+      } else {
+        setPrayerData(getGuestPrayers());
       }
 
       const lat = settings?.latitude || activeLocation.lat;
@@ -197,7 +224,7 @@ export const DashboardPage: React.FC<{ onOpenTasbih?: () => void; onOpenQibla?: 
   useEffect(() => {
     loadDashboardData();
     handleAutoDetectGPS(false);
-  }, []);
+  }, [isAuthenticated]);
 
   // Live countdown to next prayer
   useEffect(() => {
@@ -221,89 +248,112 @@ export const DashboardPage: React.FC<{ onOpenTasbih?: () => void; onOpenQibla?: 
     return () => clearInterval(interval);
   }, [calculatedTimes]);
 
-  // Handle Quick Toggle with Undo Toast
+  // Handle Quick Toggle (Works for Guest & Signed-in Users Instantly!)
   const handleQuickToggle = async (prayerName: PrayerName, e: React.MouseEvent) => {
     e.stopPropagation();
 
-    if (!isAuthenticated) {
-      showToast({ message: 'Please sign in with Google or email to record your prayers', type: 'info' });
-      return;
-    }
-
-    const currentItem = prayerData?.prayers.find(p => p.name === prayerName);
+    const currentPrayers = prayerData?.prayers || DEFAULT_PRAYER_NAMES.map(n => ({ name: n, status: 'pending' as PrayerStatus }));
+    const currentItem = currentPrayers.find(p => p.name === prayerName);
     const newStatus: PrayerStatus = currentItem?.status === 'completed' ? 'pending' : 'completed';
 
-    try {
-      const res = await api.togglePrayer({ prayerName, status: newStatus });
-      setPrayerData(prev => prev ? {
-        ...prev,
-        prayers: res.prayers,
-        completedCount: res.completedCount,
-        completionPercentage: res.completionPercentage
-      } : null);
+    // Instant Optimistic UI Update
+    const updatedPrayers = currentPrayers.map(p => p.name === prayerName ? { ...p, status: newStatus } : p);
+    const completedCount = updatedPrayers.filter(p => p.status === 'completed').length;
+    const completedAllToday = completedCount === 5;
 
-      await refreshMe();
+    const newPrayerData: TodayPrayersResponse = {
+      date: prayerData?.date || getTodayDateStr(),
+      prayers: updatedPrayers,
+      completedCount,
+      totalPrayers: 5,
+      completionPercentage: Math.round((completedCount / 5) * 100)
+    };
 
-      if (newStatus === 'completed') {
-        if (res.completedAllToday) {
-          confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-          showToast({
-            message: `🎉 MashAllah! All 5 daily prayers completed today!`,
-            type: 'success'
-          });
-        } else {
-          showToast({
-            message: `${prayerName} marked as completed ✓`,
-            type: 'success',
-            onUndo: async () => {
-              await api.togglePrayer({ prayerName, status: 'pending' });
-              loadDashboardData();
-              refreshMe();
-            },
-            undoLabel: 'Undo'
-          });
-        }
+    setPrayerData(newPrayerData);
+
+    if (newStatus === 'completed') {
+      if (completedAllToday) {
+        confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+        showToast({
+          message: `🎉 MashAllah! All 5 daily prayers completed today!`,
+          type: 'success'
+        });
       } else {
         showToast({
-          message: `${prayerName} marked as not completed`,
-          type: 'info'
+          message: `${prayerName} marked as completed ✓`,
+          type: 'success'
         });
       }
-    } catch (err: any) {
-      showToast({ message: err.message || 'Error updating prayer', type: 'error' });
+    } else {
+      showToast({
+        message: `${prayerName} marked as pending`,
+        type: 'info'
+      });
+    }
+
+    if (isAuthenticated) {
+      try {
+        const res = await api.togglePrayer({ prayerName, status: newStatus });
+        setPrayerData({
+          date: res.date,
+          prayers: res.prayers,
+          completedCount: res.completedCount,
+          totalPrayers: 5,
+          completionPercentage: res.completionPercentage
+        });
+        await refreshMe();
+      } catch (err: any) {
+        console.error('Cloud sync error:', err);
+      }
+    } else {
+      saveGuestPrayers(newPrayerData);
     }
   };
 
-  // Handle Confirmation Modal submit
+  // Handle Confirmation Modal submit (Works for Guest & Signed-in Users!)
   const handleConfirmModalStatus = async (prayerName: PrayerName, status: PrayerStatus, notes?: string) => {
-    if (!isAuthenticated) {
-      showToast({ message: 'Please sign in with Google or email to record your prayers', type: 'info' });
-      setConfirmModalPrayer(null);
-      return;
+    setConfirmModalPrayer(null);
+
+    const currentPrayers = prayerData?.prayers || DEFAULT_PRAYER_NAMES.map(n => ({ name: n, status: 'pending' as PrayerStatus }));
+    const updatedPrayers = currentPrayers.map(p => p.name === prayerName ? { ...p, status, notes } : p);
+    const completedCount = updatedPrayers.filter(p => p.status === 'completed').length;
+    const completedAllToday = completedCount === 5;
+
+    const newPrayerData: TodayPrayersResponse = {
+      date: prayerData?.date || getTodayDateStr(),
+      prayers: updatedPrayers,
+      completedCount,
+      totalPrayers: 5,
+      completionPercentage: Math.round((completedCount / 5) * 100)
+    };
+
+    setPrayerData(newPrayerData);
+
+    if (status === 'completed' && completedAllToday) {
+      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
     }
 
-    try {
-      const res = await api.togglePrayer({ prayerName, status, notes });
-      setPrayerData(prev => prev ? {
-        ...prev,
-        prayers: res.prayers,
-        completedCount: res.completedCount,
-        completionPercentage: res.completionPercentage
-      } : null);
+    showToast({
+      message: `${prayerName} status updated to ${status} ✓`,
+      type: status === 'completed' ? 'success' : 'info'
+    });
 
-      setConfirmModalPrayer(null);
-      await refreshMe();
-
-      if (status === 'completed' && res.completedAllToday) {
-        confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+    if (isAuthenticated) {
+      try {
+        const res = await api.togglePrayer({ prayerName, status, notes });
+        setPrayerData({
+          date: res.date,
+          prayers: res.prayers,
+          completedCount: res.completedCount,
+          totalPrayers: 5,
+          completionPercentage: res.completionPercentage
+        });
+        await refreshMe();
+      } catch (err: any) {
+        console.error('Cloud sync error:', err);
       }
-
-      showToast({
-        message: `${prayerName} status updated to ${status} ✓`,
-        type: status === 'completed' ? 'success' : 'info'
-      });
-    } catch (err: any) {
-      showToast({ message: err.message || 'Error updating prayer', type: 'error' });
+    } else {
+      saveGuestPrayers(newPrayerData);
     }
   };
 
@@ -451,52 +501,78 @@ export const DashboardPage: React.FC<{ onOpenTasbih?: () => void; onOpenQibla?: 
                 {currentWisdom.arabic}
               </p>
 
-              {/* Bangla Meaning */}
-              <p className="text-sm sm:text-base text-slate-200 font-medium leading-relaxed select-text">
+              {/* Bangla Translation */}
+              <p className="text-sm font-semibold text-emerald-300/95 leading-relaxed pt-1 select-text">
                 {currentWisdom.bangla}
               </p>
 
               {/* English Translation */}
-              <p className="text-xs text-slate-400 italic select-text">
-                {currentWisdom.english}
+              <p className="text-xs text-slate-300/90 italic leading-relaxed pt-0.5 select-text">
+                "{currentWisdom.english}"
               </p>
             </div>
           </div>
 
-          {/* Interactive Navigation Controls */}
-          <div className="flex items-center space-x-1.5 self-end sm:self-start shrink-0 pt-2 sm:pt-0">
+          {/* Interactive wisdom switcher controls */}
+          <div className="flex sm:flex-col items-center justify-end gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-800/80">
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={handlePrevWisdom}
+                className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-300 border border-slate-700/80 transition-colors"
+                title="Previous Ayah/Hadith"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+
+              <button
+                type="button"
+                onClick={handleShuffleWisdom}
+                className="p-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 transition-colors"
+                title="Randomize Ayah/Hadith"
+              >
+                <Shuffle className="w-4 h-4" />
+              </button>
+
+              <button
+                type="button"
+                onClick={handleNextWisdom}
+                className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-300 border border-slate-700/80 transition-colors"
+                title="Next Ayah/Hadith"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+
             <button
               type="button"
               onClick={handleCopyWisdom}
-              className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/80 transition-colors"
-              title="Copy Ayah / Hadith text"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-300 border border-slate-700/80 text-xs font-semibold transition-colors"
+              title="Copy Ayah/Hadith text"
             >
-              <Copy className="w-4 h-4" />
+              <Copy className="w-3.5 h-3.5 text-slate-400" />
+              <span>Copy</span>
             </button>
+          </div>
+        </div>
 
-            <button
-              type="button"
-              onClick={handleShuffleWisdom}
-              className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-amber-300 border border-slate-700/80 transition-colors"
-              title="Random Reflection"
-            >
-              <Shuffle className="w-4 h-4" />
-            </button>
-
+        {/* Indicator dots */}
+        <div className="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between text-[11px] text-slate-400">
+          <span>Daily Spiritual Collection: {wisdomIndex + 1} of {SPIRITUAL_COLLECTION.length}</span>
+          <div className="flex items-center gap-1">
             <button
               type="button"
               onClick={handlePrevWisdom}
-              className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/80 transition-colors"
-              title="Previous Wisdom"
+              className="hover:text-amber-300 transition-colors flex items-center gap-0.5"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-3.5 h-3.5" />
+              <span>Prev</span>
             </button>
-
+            <span>•</span>
             <button
               type="button"
               onClick={handleNextWisdom}
-              className="flex items-center space-x-1 px-3 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold transition-all shadow-sm"
-              title="Next Reflection"
+              className="hover:text-amber-300 transition-colors flex items-center gap-0.5"
             >
               <span>Next</span>
               <ChevronRight className="w-3.5 h-3.5" />

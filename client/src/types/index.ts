@@ -57,7 +57,7 @@ export interface TodayPrayersResponse {
   completedCount: number;
   totalPrayers: number;
   completionPercentage: number;
-  quranSummary: {
+  quranSummary?: {
     pagesRead: number;
     durationMins: number;
   };
