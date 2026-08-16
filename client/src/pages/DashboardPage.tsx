@@ -639,22 +639,23 @@ export const DashboardPage: React.FC<{ onOpenTasbih?: () => void; onOpenQibla?: 
         </div>
 
         {/* Card 2: Dedicated Quran Progress Card */}
-        <div className="p-6 rounded-3xl spiritual-card flex flex-col justify-between">
+        <div className="p-5 sm:p-6 rounded-3xl spiritual-card flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between pb-4 border-b border-slate-800/80">
-              <div className="flex items-center space-x-2.5">
-                <div className="w-9 h-9 rounded-2xl bg-teal-500/20 text-teal-300 border border-teal-500/30 flex items-center justify-center">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-800/80 gap-2">
+              <div className="flex items-center space-x-2.5 min-w-0">
+                <div className="w-9 h-9 rounded-2xl bg-teal-500/20 text-teal-300 border border-teal-500/30 flex items-center justify-center shrink-0">
                   <BookOpen className="w-4 h-4" />
                 </div>
-                <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-teal-400 font-cinzel">Noble Quran</span>
-                  <h3 className="text-lg font-bold text-white tracking-tight">Daily Tilawah</h3>
+                <div className="min-w-0">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-teal-400 font-cinzel block truncate">Noble Quran</span>
+                  <h3 className="text-base sm:text-lg font-bold text-white tracking-tight truncate">Daily Tilawah</h3>
                 </div>
               </div>
 
               <button
+                type="button"
                 onClick={() => setIsQuranModalOpen(true)}
-                className="flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold shadow-lg shadow-emerald-950/40 transition-colors"
+                className="shrink-0 flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold shadow-lg shadow-emerald-950/40 transition-colors"
               >
                 <Plus className="w-3.5 h-3.5 stroke-[3]" />
                 <span>Add Reading</span>
@@ -662,15 +663,15 @@ export const DashboardPage: React.FC<{ onOpenTasbih?: () => void; onOpenQibla?: 
             </div>
 
             {/* Reading Pages Progress */}
-            <div className="my-6">
-              <div className="flex items-baseline justify-between mb-2">
-                <div>
-                  <span className="text-3xl font-extrabold text-white">
+            <div className="my-5">
+              <div className="flex flex-wrap items-baseline justify-between gap-1 mb-2">
+                <div className="flex items-baseline space-x-1.5">
+                  <span className="text-2xl sm:text-3xl font-extrabold text-white">
                     {todayQuranPages} Pages
                   </span>
-                  <span className="text-xs text-slate-400 ml-1.5">Today</span>
+                  <span className="text-xs text-slate-400 font-medium">Today</span>
                 </div>
-                <span className="text-xs font-semibold text-teal-300">
+                <span className="text-xs font-bold text-teal-300 bg-teal-500/10 px-2 py-0.5 rounded-md border border-teal-500/20">
                   Goal: {quranGoal} pgs
                 </span>
               </div>
@@ -683,7 +684,7 @@ export const DashboardPage: React.FC<{ onOpenTasbih?: () => void; onOpenQibla?: 
                 />
               </div>
 
-              <div className="flex justify-between items-center text-[11px] text-slate-400 mt-2">
+              <div className="flex justify-between items-center text-[11px] text-slate-400 mt-2 font-medium">
                 <span>{quranPercentage}% of daily goal</span>
                 <span>{todayQuranDuration} mins spent</span>
               </div>
