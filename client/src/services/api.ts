@@ -40,26 +40,37 @@ const request = async <T>(endpoint: string, options: RequestInit = {}): Promise<
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_BASE}${endpoint}`, {
-    ...options,
-    headers
-  });
+  try {
+    const response = await fetch(`${API_BASE}${endpoint}`, {
+      ...options,
+      headers
+    });
 
-  const data = await response.json().catch(() => ({}));
+    const data = await response.json().catch(() => ({}));
 
-  if (!response.ok) {
-    throw new Error(data.error || `Request failed with status ${response.status}`);
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        // Clear expired or invalid tokens automatically
+        setAuthToken(null);
+      }
+      const errorMsg = data.error || data.message || `Request failed (${response.status})`;
+      throw new Error(errorMsg);
+    }
+
+    return data as T;
+  } catch (err: any) {
+    if (err.name === 'TypeError' && err.message.includes('fetch')) {
+      throw new Error('Network error. Please check your connection or server status.');
+    }
+    throw err;
   }
-
-  return data as T;
 };
 
 export const api = {
   // Auth
   register: (body: any) => request<{ message: string; token: string; user: User }>('/auth/register', { method: 'POST', body: JSON.stringify(body) }),
   login: (body: any) => request<{ message: string; token: string; user: User }>('/auth/login', { method: 'POST', body: JSON.stringify(body) }),
-  googleAuth: (body: { email: string; name?: string; avatar?: string; googleId?: string }) => 
-    request<{ message: string; token: string; user: User }>('/auth/google', { method: 'POST', body: JSON.stringify(body) }),
+  googleAuth: (body: any) => request<{ message: string; token: string; user: User }>('/auth/google', { method: 'POST', body: JSON.stringify(body) }),
   getMe: () => request<{ user: User; settings: UserSettings; streak: StreakInfo; achievements: string[] }>('/auth/me'),
   updateProfile: (body: any) => request<{ message: string; user: User }>('/auth/profile', { method: 'PUT', body: JSON.stringify(body) }),
   forgotPassword: (email: string) => request<{ message: string; demoResetCode?: string }>('/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) }),
@@ -68,67 +79,104 @@ export const api = {
   // Prayers
   getTodayPrayers: (date?: string) => request<TodayPrayersResponse>(`/prayers${date ? `?date=${date}` : ''}`),
   togglePrayer: (body: { prayerName: string; status: string; date?: string; notes?: string }) =>
-    request<{
-      message: string;
-      date: string;
-      prayerName: string;
-      status: string;
-      prayers: any[];
-      completedCount: number;
-      completionPercentage: number;
-      streak: StreakInfo;
-      completedAllToday: boolean;
-    }>('/prayers/toggle', { method: 'POST', body: JSON.stringify(body) }),
-  markAllPrayers: (date?: string, status?: string) =>
-    request<{ message: string; date: string; streak: StreakInfo }>('/prayers/mark-all', { method: 'POST', body: JSON.stringify({ date, status }) }),
+    request<TodayPrayersResponse & { completedAllToday?: boolean }>('/prayers/toggle', { method: 'POST', body: JSON.stringify(body) }),
+  markAllPrayers: (body: { date?: string; status?: string }) =>
+    request<{ message: string; streak: StreakInfo }>('/prayers/mark-all', { method: 'POST', body: JSON.stringify(body) }),
 
   // Quran
-  getQuranSummary: (date?: string) => request<QuranResponse>(`/quran${date ? `?date=${date}` : ''}`),
+  getQuranSummary: () => request<QuranResponse>('/quran/summary'),
+  logQuranSession: (body: { date?: string; pagesRead: number; durationMins?: number; surahNumber?: number; surahName?: string; notes?: string }) =>
+    request<{ message: string; summary: QuranResponse }>('/quran/log', { method: 'POST', body: JSON.stringify(body) }),
+  logQuranReading: (body: { date?: string; pagesRead: number; durationMins?: number; surahNumber?: number; surahName?: string; notes?: string }) =>
+    request<{ message: string; summary: QuranResponse }>('/quran/log', { method: 'POST', body: JSON.stringify(body) }),
   getSurahs: () => request<Surah[]>('/quran/surahs'),
-  logQuranReading: (body: { pagesRead: number; surahNumber?: number; surahName?: string; durationMins?: number; notes?: string; date?: string }) =>
-    request<{ message: string; id: number; streak: StreakInfo }>('/quran/log', { method: 'POST', body: JSON.stringify(body) }),
-  deleteQuranRecord: (id: number) => request<{ message: string; streak: StreakInfo }>(`/quran/${id}`, { method: 'DELETE' }),
 
   // History & Calendar
-  getMonthHistory: (year: number, month: number) => request<MonthHistoryResponse>(`/history/month?year=${year}&month=${month}`),
+  getMonthHistory: (year?: number, month?: number) => {
+    const y = year || new Date().getFullYear();
+    const m = month || (new Date().getMonth() + 1);
+    return request<MonthHistoryResponse>(`/history/month?year=${y}&month=${m}`);
+  },
   getDayDetail: (date: string) => request<DayDetailResponse>(`/history/day/${date}`),
 
   // Analytics & Stats
-  getStats: () => request<StatsResponse>('/stats'),
+  getStats: (timeframe: 'week' | 'month' | 'year' | 'all' = 'month') => request<StatsResponse>(`/stats?timeframe=${timeframe}`),
 
   // Leaderboard
   getLeaderboard: (timeframe: 'this_week' | 'this_month' | 'all_time') =>
-    request<{ timeframe: string; leaderboard: LeaderboardItem[]; userRank: LeaderboardItem | null; totalParticipants: number }>(`/leaderboard?timeframe=${timeframe}`),
+    request<{ timeframe: string; leaderboard: LeaderboardItem[]; userRank: LeaderboardItem | null }>(`/leaderboard?timeframe=${timeframe}`),
 
   // Community
-  getCommunityFeed: (page = 1) => request<{ feed: CommunityPost[]; page: number; hasMore: boolean }>(`/community/feed?page=${page}`),
-  createPost: (body: { content: string; postType?: string; badgeInfo?: any }) => request<{ message: string; post: CommunityPost }>('/community/posts', { method: 'POST', body: JSON.stringify(body) }),
-  reactToPost: (postId: number, reactionType: string) =>
-    request<{ postId: number; reactions: Record<string, number>; userReactions: string[]; totalReactions: number }>(`/community/posts/${postId}/react`, { method: 'POST', body: JSON.stringify({ reactionType }) }),
-  addComment: (postId: number, comment: string) => request<{ message: string; comment: any }>(`/community/posts/${postId}/comments`, { method: 'POST', body: JSON.stringify({ comment }) }),
-  getPublicProfile: (username: string) => request<any>(`/community/user/${username}`),
+  getCommunityPosts: () => request<CommunityPost[]>('/community/posts'),
+  getCommunityFeed: async (): Promise<{ feed: CommunityPost[] }> => {
+    const posts = await request<CommunityPost[]>('/community/posts');
+    return { feed: Array.isArray(posts) ? posts : [] };
+  },
+  createCommunityPost: (body: { content: string; postType?: string; badgeInfo?: string }) =>
+    request<{ message: string; post: CommunityPost }>('/community/posts', { method: 'POST', body: JSON.stringify(body) }),
+  createPost: (body: { content: string; postType?: string; badgeInfo?: string }) =>
+    request<{ message: string; post: CommunityPost }>('/community/posts', { method: 'POST', body: JSON.stringify(body) }),
+  toggleReaction: (postId: number, reactionType: string) =>
+    request<{ message: string; reactions: Record<string, number>; userReactions?: string[]; totalReactions?: number }>(`/community/posts/${postId}/react`, {
+      method: 'POST',
+      body: JSON.stringify({ reactionType })
+    }),
+  reactToPost: async (postId: number, reactionType: string) => {
+    const res = await request<{ message: string; reactions: Record<string, number> }>(`/community/posts/${postId}/react`, {
+      method: 'POST',
+      body: JSON.stringify({ reactionType })
+    });
+    const total = Object.values(res.reactions || {}).reduce((a, b) => a + b, 0);
+    return {
+      message: res.message,
+      reactions: res.reactions,
+      userReactions: [reactionType],
+      totalReactions: total
+    };
+  },
+  addComment: (postId: number, comment: string) =>
+    request<{ message: string; comments: any[]; comment?: any }>(`/community/posts/${postId}/comment`, {
+      method: 'POST',
+      body: JSON.stringify({ comment })
+    }),
 
   // Settings
-  getSettings: () => request<{ settings: UserSettings }>('/settings'),
-  updateSettings: (settings: Partial<UserSettings>) => request<{ message: string; settings: UserSettings }>('/settings', { method: 'PUT', body: JSON.stringify(settings) }),
+  getSettings: () => request<UserSettings>('/settings'),
+  updateSettings: (body: Partial<UserSettings>) => request<{ message: string; settings: UserSettings }>('/settings', { method: 'PUT', body: JSON.stringify(body) }),
 
-  // Prayer Times Calculation
-  getPrayerTimes: (params: { latitude?: number; longitude?: number; date?: string; method?: string; madhab?: string }) => {
-    const query = new URLSearchParams();
-    if (params.latitude) query.set('latitude', params.latitude.toString());
-    if (params.longitude) query.set('longitude', params.longitude.toString());
-    if (params.date) query.set('date', params.date);
-    if (params.method) query.set('method', params.method);
-    if (params.madhab) query.set('madhab', params.madhab);
-    return request<CalculatedPrayerTimes>(`/prayer-times?${query.toString()}`);
+  // Prayer Times (Dynamic Astronomical Adhan)
+  getPrayerTimes: (params: { latitude: number; longitude: number; date?: string; method?: string; madhab?: string }) => {
+    const queryStr = new URLSearchParams({
+      latitude: params.latitude.toString(),
+      longitude: params.longitude.toString(),
+      ...(params.date ? { date: params.date } : {}),
+      ...(params.method ? { method: params.method } : {}),
+      ...(params.madhab ? { madhab: params.madhab } : {})
+    }).toString();
+    return request<CalculatedPrayerTimes>(`/prayer-times?${queryStr}`);
   },
 
   // Admin
   getAdminMetrics: () => request<AdminMetrics>('/admin/metrics'),
-  getAdminUsers: (search?: string) => request<{ users: any[] }>(`/admin/users${search ? `?search=${encodeURIComponent(search)}` : ''}`),
-  toggleUserStatus: (id: number) => request<{ message: string; isDisabled: number }>(`/admin/users/${id}/toggle-status`, { method: 'PUT' }),
-  getAnnouncements: () => request<{ announcements: Announcement[] }>('/admin/announcements'),
-  createAnnouncement: (body: { title: string; content: string }) => request<{ message: string; announcement: Announcement }>('/admin/announcements', { method: 'POST', body: JSON.stringify(body) }),
-  deleteAnnouncement: (id: number) => request<{ message: string }>(`/admin/announcements/${id}`, { method: 'DELETE' }),
-  deleteCommunityPost: (id: number) => request<{ message: string }>(`/admin/posts/${id}`, { method: 'DELETE' })
+  getAdminUsers: async (search?: string): Promise<{ users: User[] }> => {
+    const queryStr = search ? `?search=${encodeURIComponent(search)}` : '';
+    const res = await request<any>(`/admin/users${queryStr}`);
+    return { users: Array.isArray(res) ? res : (res.users || []) };
+  },
+  getAnnouncements: async (): Promise<{ announcements: Announcement[] }> => {
+    const res = await request<any>('/admin/announcements');
+    return { announcements: Array.isArray(res) ? res : (res.announcements || []) };
+  },
+  toggleUserDisable: (userId: number, isDisabled: boolean) =>
+    request<{ message: string; isDisabled?: boolean }>(`/admin/users/${userId}/disable`, { method: 'POST', body: JSON.stringify({ isDisabled }) }),
+  toggleUserStatus: async (userId: number, isDisabled?: boolean) => {
+    const res = await request<{ message: string; isDisabled?: boolean }>(`/admin/users/${userId}/disable`, { method: 'POST', body: JSON.stringify({ isDisabled: !!isDisabled }) });
+    return { message: res.message, isDisabled: res.isDisabled ?? !isDisabled };
+  },
+  postAnnouncement: (body: { title: string; content: string }) =>
+    request<{ message: string; announcement: Announcement }>('/admin/announcements', { method: 'POST', body: JSON.stringify(body) }),
+  createAnnouncement: (body: { title: string; content: string }) =>
+    request<{ message: string; announcement: Announcement }>('/admin/announcements', { method: 'POST', body: JSON.stringify(body) }),
+  deleteAnnouncement: (id: number) =>
+    request<{ message: string }>(`/admin/announcements/${id}`, { method: 'DELETE' })
 };
