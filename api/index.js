@@ -12,6 +12,8 @@ import settingsRoutes from '../server/src/routes/settings.js';
 import adminRoutes from '../server/src/routes/admin.js';
 import prayerTimesRoutes from '../server/src/routes/prayerTimes.js';
 import { connectMongo } from '../server/src/mongo.js';
+import { initDb } from '../server/src/db.js';
+import { seedDatabase } from '../server/src/seed.js';
 
 dotenv.config();
 
@@ -45,11 +47,18 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+let isInitialized = false;
+
 export default async function handler(req, res) {
-  try {
-    await connectMongo();
-  } catch (err) {
-    console.error('Mongo connection error in Vercel function:', err);
+  if (!isInitialized) {
+    try {
+      await initDb();
+      await seedDatabase();
+      await connectMongo();
+      isInitialized = true;
+    } catch (err) {
+      console.error('Serverless initialization notice:', err);
+    }
   }
   return app(req, res);
 }
