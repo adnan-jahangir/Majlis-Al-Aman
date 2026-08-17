@@ -8,7 +8,8 @@ import {
   ShieldCheck, 
   LogOut, 
   User as UserIcon,
-  Flame
+  Flame,
+  Settings
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -154,6 +155,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                   >
                     <UserIcon className="w-4 h-4 text-slate-400" />
                     <span>My Profile & Heatmap</span>
+                  </button>
+                  
+                  <button
+                    onClick={() => setActiveTab('settings')}
+                    className="w-full flex items-center space-x-2 px-4 py-2 text-xs text-slate-300 hover:bg-slate-800 hover:text-white transition-colors text-left"
+                  >
+                    <Settings className="w-4 h-4 text-slate-400" />
+                    <span>Settings</span>
                   </button>
 
                   {user.role === 'admin' && (

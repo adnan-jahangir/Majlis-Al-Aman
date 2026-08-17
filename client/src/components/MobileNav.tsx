@@ -30,7 +30,7 @@ export const MobileNav: React.FC<MobileNavProps> = ({
           }`}
         >
           <LayoutDashboard className="w-4 h-4 sm:w-5 sm:h-5" />
-          <span className="text-[9px] sm:text-[10px] mt-1 tracking-tight">Home</span>
+          <span className="text-[9px] sm:text-[10px] mt-1 tracking-tight">Namaz</span>
         </button>
 
         {/* Community Feed */}
@@ -76,17 +76,6 @@ export const MobileNav: React.FC<MobileNavProps> = ({
         >
           <CalendarDays className="w-4 h-4 sm:w-5 sm:h-5" />
           <span className="text-[9px] sm:text-[10px] mt-1 tracking-tight">Calendar</span>
-        </button>
-
-        {/* Profile */}
-        <button
-          onClick={() => setActiveTab('profile')}
-          className={`flex-1 flex flex-col items-center justify-center py-1 transition-all ${
-            activeTab === 'profile' ? 'text-emerald-400 font-bold scale-105' : 'text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          <UserIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-          <span className="text-[9px] sm:text-[10px] mt-1 tracking-tight">Profile</span>
         </button>
       </div>
     </div>
