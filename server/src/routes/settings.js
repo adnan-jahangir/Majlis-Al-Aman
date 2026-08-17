@@ -44,6 +44,8 @@ router.put('/', authenticateToken, async (req, res) => {
       ishaReminder,
       quranReminder,
       streakReminder,
+      emailReminder,
+      reminderTime,
       dailyQuranGoal,
       isPublicProfile,
       showPrayerStats,
@@ -57,9 +59,10 @@ router.put('/', authenticateToken, async (req, res) => {
         user_id, theme, location_city, location_country, latitude, longitude,
         calc_method, madhab, fajr_reminder, dhuhr_reminder, asr_reminder,
         maghrib_reminder, isha_reminder, quran_reminder, streak_reminder,
+        email_reminder, reminder_time,
         daily_quran_goal, is_public_profile, show_prayer_stats, show_quran_stats,
         appear_on_leaderboard, show_community_activity
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(user_id) DO UPDATE SET
         theme = COALESCE(?, theme),
         location_city = COALESCE(?, location_city),
@@ -75,6 +78,8 @@ router.put('/', authenticateToken, async (req, res) => {
         isha_reminder = COALESCE(?, isha_reminder),
         quran_reminder = COALESCE(?, quran_reminder),
         streak_reminder = COALESCE(?, streak_reminder),
+        email_reminder = COALESCE(?, email_reminder),
+        reminder_time = COALESCE(?, reminder_time),
         daily_quran_goal = COALESCE(?, daily_quran_goal),
         is_public_profile = COALESCE(?, is_public_profile),
         show_prayer_stats = COALESCE(?, show_prayer_stats),
@@ -97,6 +102,8 @@ router.put('/', authenticateToken, async (req, res) => {
         ishaReminder ?? 1,
         quranReminder ?? 1,
         streakReminder ?? 1,
+        emailReminder ?? 1,
+        reminderTime || '22:00',
         dailyQuranGoal || 10,
         isPublicProfile ?? 1,
         showPrayerStats ?? 1,
@@ -118,6 +125,8 @@ router.put('/', authenticateToken, async (req, res) => {
         ishaReminder,
         quranReminder,
         streakReminder,
+        emailReminder,
+        reminderTime,
         dailyQuranGoal,
         isPublicProfile,
         showPrayerStats,
@@ -133,6 +142,29 @@ router.put('/', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Update settings error:', error);
     res.status(500).json({ error: 'Server error updating settings' });
+  }
+});
+
+// Test reminder notification dispatch
+router.post('/test-reminder', authenticateToken, async (req, res) => {
+  try {
+    const user = await get('SELECT id, name, email FROM users WHERE id = ?', [req.user.id]);
+    const { sendReminderEmail } = await import('../services/emailService.js');
+
+    const result = await sendReminderEmail({
+      user,
+      pendingPrayers: ['Maghrib', 'Isha'],
+      quranPagesToday: 4,
+      streak: 5
+    });
+
+    res.json({
+      message: 'Test notification triggered successfully',
+      result
+    });
+  } catch (error) {
+    console.error('Test reminder error:', error);
+    res.status(500).json({ error: 'Server error triggering test notification' });
   }
 });
 

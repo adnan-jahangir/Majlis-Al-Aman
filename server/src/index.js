@@ -69,10 +69,13 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error', details: err.message });
 });
 
+import { startReminderScheduler } from './services/reminderScheduler.js';
+
 // Initialize database and start server
 Promise.all([seedDatabase(), connectMongo()])
   .then(async () => {
     await seedMongoUser();
+    startReminderScheduler();
     app.listen(PORT, '0.0.0.0', () => {
       console.log(`✨ Majlis Al-Aman Server running on http://0.0.0.0:${PORT}`);
       console.log(`📌 Primary MongoDB ID Configured: 6a81ca9256464fc5bf9cbd87`);

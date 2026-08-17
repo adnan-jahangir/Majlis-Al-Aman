@@ -4,26 +4,25 @@ import { authenticateToken, optionalAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Get community feed
-router.get('/feed', optionalAuth, async (req, res) => {
+// Get community feed / posts
+router.get(['/feed', '/posts'], optionalAuth, async (req, res) => {
   try {
     const currentUserId = req.user ? req.user.id : null;
     const page = parseInt(req.query.page || '1', 10);
-    const limit = parseInt(req.query.limit || '20', 10);
+    const limit = parseInt(req.query.limit || '50', 10);
     const offset = (page - 1) * limit;
 
     const posts = await query(
       `SELECT cp.id, cp.user_id, cp.content, cp.post_type, cp.badge_info, cp.created_at,
               u.name, u.username, u.avatar,
-              s.current_streak
+              COALESCE(s.current_streak, 0) as current_streak
        FROM community_posts cp
        JOIN users u ON cp.user_id = u.id
-       JOIN user_settings us ON u.id = us.user_id
        LEFT JOIN streaks s ON u.id = s.user_id
-       WHERE u.is_disabled = 0 AND (us.show_community_activity = 1 OR u.id = ?)
+       WHERE u.is_disabled = 0
        ORDER BY cp.created_at DESC
        LIMIT ? OFFSET ?`,
-      [currentUserId || -1, limit, offset]
+      [limit, offset]
     );
 
     const postIds = posts.map(p => p.id);
@@ -67,7 +66,7 @@ router.get('/feed', optionalAuth, async (req, res) => {
         `SELECT pc.id, pc.post_id, pc.comment, pc.created_at, u.name, u.username, u.avatar
          FROM post_comments pc
          JOIN users u ON pc.user_id = u.id
-         WHERE pc.post_id IN (${placeholders})
+         WHERE pc.post_id IN (${placeholders}) AND u.is_disabled = 0
          ORDER BY pc.created_at ASC`,
         postIds
       );
@@ -87,7 +86,7 @@ router.get('/feed', optionalAuth, async (req, res) => {
       commentsCount: (commentsByPost[p.id] || []).length
     }));
 
-    res.json({ feed, page, hasMore: posts.length === limit });
+    res.json({ feed, posts: feed, page, hasMore: posts.length === limit });
   } catch (error) {
     console.error('Get feed error:', error);
     res.status(500).json({ error: 'Server error fetching community feed' });
@@ -95,7 +94,7 @@ router.get('/feed', optionalAuth, async (req, res) => {
 });
 
 // Create post
-router.post('/posts', authenticateToken, async (req, res) => {
+router.post(['/posts', '/'], authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
     const { content, postType = 'general', badgeInfo } = req.body;
@@ -107,13 +106,13 @@ router.post('/posts', authenticateToken, async (req, res) => {
     const result = await run(
       `INSERT INTO community_posts (user_id, content, post_type, badge_info)
        VALUES (?, ?, ?, ?)`,
-      [userId, content.trim(), postType, badgeInfo ? JSON.stringify(badgeInfo) : null]
+      [userId, content.trim(), postType, badgeInfo ? (typeof badgeInfo === 'string' ? badgeInfo : JSON.stringify(badgeInfo)) : null]
     );
 
     const newPost = await get(
       `SELECT cp.id, cp.user_id, cp.content, cp.post_type, cp.badge_info, cp.created_at,
               u.name, u.username, u.avatar,
-              s.current_streak
+              COALESCE(s.current_streak, 0) as current_streak
        FROM community_posts cp
        JOIN users u ON cp.user_id = u.id
        LEFT JOIN streaks s ON u.id = s.user_id
@@ -139,7 +138,7 @@ router.post('/posts', authenticateToken, async (req, res) => {
 });
 
 // Toggle reaction on post
-router.post('/posts/:id/react', authenticateToken, async (req, res) => {
+router.post(['/posts/:id/react', '/posts/:id/reactions'], authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
     const postId = req.params.id;
@@ -180,7 +179,7 @@ router.post('/posts/:id/react', authenticateToken, async (req, res) => {
     );
 
     res.json({
-      postId,
+      postId: parseInt(postId, 10) || postId,
       reactions,
       userReactions: userReactions.map(r => r.reaction_type),
       totalReactions: Object.values(reactions).reduce((a, b) => a + b, 0)
@@ -192,7 +191,7 @@ router.post('/posts/:id/react', authenticateToken, async (req, res) => {
 });
 
 // Add comment to post
-router.post('/posts/:id/comments', authenticateToken, async (req, res) => {
+router.post(['/posts/:id/comments', '/posts/:id/comment'], authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
     const postId = req.params.id;
@@ -215,7 +214,11 @@ router.post('/posts/:id/comments', authenticateToken, async (req, res) => {
       [result.id]
     );
 
-    res.status(201).json({ message: 'Comment added', comment: newComment });
+    res.status(201).json({
+      message: 'Comment added',
+      comment: newComment,
+      comments: [newComment]
+    });
   } catch (error) {
     console.error('Add comment error:', error);
     res.status(500).json({ error: 'Server error adding comment' });

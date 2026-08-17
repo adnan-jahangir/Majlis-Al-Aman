@@ -89,6 +89,8 @@ export const initDb = async () => {
         isha_reminder INTEGER DEFAULT 1,
         quran_reminder INTEGER DEFAULT 1,
         streak_reminder INTEGER DEFAULT 1,
+        email_reminder INTEGER DEFAULT 1,
+        reminder_time TEXT DEFAULT '22:00',
         daily_quran_goal INTEGER DEFAULT 10,
         is_public_profile INTEGER DEFAULT 1,
         show_prayer_stats INTEGER DEFAULT 1,
@@ -98,6 +100,11 @@ export const initDb = async () => {
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
       )
     `);
+
+    // Safe migration for existing tables
+    try { await run(`ALTER TABLE user_settings ADD COLUMN email_reminder INTEGER DEFAULT 1`); } catch (e) {}
+    try { await run(`ALTER TABLE user_settings ADD COLUMN reminder_time TEXT DEFAULT '22:00'`); } catch (e) {}
+    try { await run(`UPDATE user_settings SET reminder_time = '22:00' WHERE reminder_time IS NULL OR reminder_time = '21:00'`); } catch (e) {}
 
     // Prayer Records
     await run(`

@@ -26,6 +26,8 @@ export interface UserSettings {
   isha_reminder: number;
   quran_reminder: number;
   streak_reminder: number;
+  email_reminder?: number;
+  reminder_time?: string;
   daily_quran_goal: number;
   is_public_profile: number;
   show_prayer_stats: number;

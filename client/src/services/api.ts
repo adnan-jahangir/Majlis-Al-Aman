@@ -109,14 +109,23 @@ export const api = {
     request<LeaderboardUserDetail>(`/leaderboard/user/${userId}`),
 
   // Community
-  getCommunityPosts: () => request<CommunityPost[]>('/community/posts'),
-  getCommunityFeed: async (): Promise<{ feed: CommunityPost[] }> => {
-    const posts = await request<CommunityPost[]>('/community/posts');
-    return { feed: Array.isArray(posts) ? posts : [] };
+  getCommunityPosts: async (): Promise<CommunityPost[]> => {
+    const res = await request<any>('/community/feed');
+    if (Array.isArray(res)) return res;
+    if (res && Array.isArray(res.feed)) return res.feed;
+    if (res && Array.isArray(res.posts)) return res.posts;
+    return [];
   },
-  createCommunityPost: (body: { content: string; postType?: string; badgeInfo?: string }) =>
+  getCommunityFeed: async (): Promise<{ feed: CommunityPost[] }> => {
+    const res = await request<any>('/community/feed');
+    if (Array.isArray(res)) return { feed: res };
+    if (res && Array.isArray(res.feed)) return { feed: res.feed };
+    if (res && Array.isArray(res.posts)) return { feed: res.posts };
+    return { feed: [] };
+  },
+  createCommunityPost: (body: { content: string; postType?: string; badgeInfo?: any }) =>
     request<{ message: string; post: CommunityPost }>('/community/posts', { method: 'POST', body: JSON.stringify(body) }),
-  createPost: (body: { content: string; postType?: string; badgeInfo?: string }) =>
+  createPost: (body: { content: string; postType?: string; badgeInfo?: any }) =>
     request<{ message: string; post: CommunityPost }>('/community/posts', { method: 'POST', body: JSON.stringify(body) }),
   toggleReaction: (postId: number, reactionType: string) =>
     request<{ message: string; reactions: Record<string, number>; userReactions?: string[]; totalReactions?: number }>(`/community/posts/${postId}/react`, {
@@ -124,20 +133,20 @@ export const api = {
       body: JSON.stringify({ reactionType })
     }),
   reactToPost: async (postId: number, reactionType: string) => {
-    const res = await request<{ message: string; reactions: Record<string, number> }>(`/community/posts/${postId}/react`, {
+    const res = await request<{ message?: string; reactions: Record<string, number>; userReactions?: string[]; totalReactions?: number }>(`/community/posts/${postId}/react`, {
       method: 'POST',
       body: JSON.stringify({ reactionType })
     });
-    const total = Object.values(res.reactions || {}).reduce((a, b) => a + b, 0);
+    const total = res.totalReactions !== undefined ? res.totalReactions : Object.values(res.reactions || {}).reduce((a, b) => a + b, 0);
     return {
-      message: res.message,
-      reactions: res.reactions,
-      userReactions: [reactionType],
+      message: res.message || 'Reacted successfully',
+      reactions: res.reactions || {},
+      userReactions: res.userReactions || [reactionType],
       totalReactions: total
     };
   },
   addComment: (postId: number, comment: string) =>
-    request<{ message: string; comments: any[]; comment?: any }>(`/community/posts/${postId}/comment`, {
+    request<{ message: string; comment: any; comments?: any[] }>(`/community/posts/${postId}/comments`, {
       method: 'POST',
       body: JSON.stringify({ comment })
     }),
@@ -145,6 +154,7 @@ export const api = {
   // Settings
   getSettings: () => request<UserSettings>('/settings'),
   updateSettings: (body: Partial<UserSettings>) => request<{ message: string; settings: UserSettings }>('/settings', { method: 'PUT', body: JSON.stringify(body) }),
+  sendTestReminder: () => request<{ message: string; result?: any }>('/settings/test-reminder', { method: 'POST' }),
 
   // Prayer Times (Dynamic Astronomical Adhan)
   getPrayerTimes: (params: { latitude: number; longitude: number; date?: string; method?: string; madhab?: string }) => {

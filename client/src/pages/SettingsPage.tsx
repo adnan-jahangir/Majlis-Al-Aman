@@ -443,27 +443,130 @@ export const SettingsPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Section 4: Notifications & Adhan Reminders */}
-        <div className="p-6 sm:p-8 rounded-3xl bg-slate-900/80 border border-white/[0.08] shadow-xl space-y-4">
-          <div className="flex items-center space-x-3 pb-4 border-b border-slate-800">
-            <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center">
-              <Bell className="w-5 h-5" />
+        {/* Section 4: Real-Time Notifications & Tracker Reminders */}
+        <div className="p-6 sm:p-8 rounded-3xl bg-slate-900/80 border border-white/[0.08] shadow-xl space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-800 gap-3">
+            <div className="flex items-center space-x-3">
+              <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center">
+                <Bell className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-bold text-base text-white">Daily Tracker & Prayer Reminders</h3>
+                <p className="text-xs text-slate-400">Receive free real-time browser push alerts & daily fill-up email reminders</p>
+              </div>
             </div>
+
+            {/* Test Notification Button */}
+            <button
+              type="button"
+              onClick={async () => {
+                const { notificationService } = await import('../services/notificationService');
+                const hasPermission = await notificationService.requestPermission();
+                if (hasPermission) {
+                  notificationService.sendTestNotification(formData.location_city || 'Brother/Sister');
+                  showToast({ message: 'Push notification triggered on your screen! 🔔', type: 'success' });
+                } else {
+                  showToast({ message: 'Browser notification permission required. Please allow notifications.', type: 'info' });
+                }
+
+                // Also trigger backend test
+                try {
+                  const { api } = await import('../services/api');
+                  await api.sendTestReminder();
+                } catch (e) {}
+              }}
+              className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-xs font-bold transition-all shadow-sm self-start sm:self-center"
+            >
+              <Sparkles className="w-4 h-4 text-amber-400" />
+              <span>🔔 Test Notification</span>
+            </button>
+          </div>
+
+          {/* Browser Permission Banner */}
+          <div className="p-4 rounded-2xl bg-slate-800/40 border border-slate-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h3 className="font-bold text-base text-white">Prayer & Habit Reminders</h3>
-              <p className="text-xs text-slate-400">Receive gentle web browser alerts before prayer times</p>
+              <div className="flex items-center space-x-2">
+                <Globe className="w-4 h-4 text-emerald-400" />
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200">
+                  Browser Push Notifications (Mobile & Desktop)
+                </h4>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Enable instant screen alerts when prayer times arrive and when it's time to log worship.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={async () => {
+                const { notificationService } = await import('../services/notificationService');
+                const granted = await notificationService.requestPermission();
+                if (granted) {
+                  showToast({ message: 'Browser notifications enabled successfully! 🌿', type: 'success' });
+                } else {
+                  showToast({ message: 'Permission was not granted in browser settings.', type: 'error' });
+                }
+              }}
+              className="px-4 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-bold transition-colors self-start sm:self-auto"
+            >
+              {typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted' 
+                ? '✓ Notifications Enabled' 
+                : '🔔 Enable Push Notifications'}
+            </button>
+          </div>
+
+          {/* Daily Tracker Reminder Settings */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+            <div className="p-4 rounded-2xl bg-slate-800/40 border border-slate-700/60 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-200">
+                  Daily Tracker Fill-Up Alert
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, email_reminder: (formData.email_reminder ?? 1) === 1 ? 0 : 1 })}
+                  className={`w-10 h-5 rounded-full transition-colors relative p-0.5 ${
+                    (formData.email_reminder ?? 1) === 1 ? 'bg-emerald-500' : 'bg-slate-700'
+                  }`}
+                >
+                  <div
+                    className={`w-4 h-4 rounded-full bg-white transition-transform ${
+                      (formData.email_reminder ?? 1) === 1 ? 'translate-x-5' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
+              <p className="text-[11px] text-slate-400">
+                Receive an automatic reminder if any of today's 5 prayers or Quran habits are incomplete.
+              </p>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-slate-800/40 border border-slate-700/60 space-y-2">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-200">
+                Daily Reminder Time
+              </label>
+              <input
+                type="time"
+                value={formData.reminder_time || '22:00'}
+                onChange={(e) => setFormData({ ...formData, reminder_time: e.target.value })}
+                className="w-full px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs font-semibold focus:outline-none focus:border-emerald-500"
+              />
+              <p className="text-[11px] text-slate-400">
+                Default: 22:00 (10:00 PM) every night.
+              </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* Individual Prayer Reminders */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             {[
-              { key: 'fajr_reminder', label: 'Fajr Dawn Reminder' },
-              { key: 'dhuhr_reminder', label: 'Dhuhr Noon Reminder' },
-              { key: 'asr_reminder', label: 'Asr Afternoon Reminder' },
-              { key: 'maghrib_reminder', label: 'Maghrib Sunset Reminder' },
-              { key: 'isha_reminder', label: 'Isha Night Reminder' },
-              { key: 'quran_reminder', label: 'Daily Quran Habit Reminder' },
-              { key: 'streak_reminder', label: 'Streak Preservation Reminder' }
+              { key: 'fajr_reminder', label: 'Fajr Dawn Adhan Reminder' },
+              { key: 'dhuhr_reminder', label: 'Dhuhr Noon Adhan Reminder' },
+              { key: 'asr_reminder', label: 'Asr Afternoon Adhan Reminder' },
+              { key: 'maghrib_reminder', label: 'Maghrib Sunset Adhan Reminder' },
+              { key: 'isha_reminder', label: 'Isha Night Adhan Reminder' },
+              { key: 'quran_reminder', label: 'Daily Quran Reading Reminder' },
+              { key: 'streak_reminder', label: 'Streak Preservation Warning' }
             ].map((item) => {
               const val = (formData as any)[item.key] === 1;
 

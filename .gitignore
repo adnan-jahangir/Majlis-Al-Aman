@@ -22,7 +22,10 @@ server/.env
 client/.env
 
 # Local Databases & Caches
-server/majlis.db
+server/majlis.db*
+*.db
+*.db-shm
+*.db-wal
 *.sqlite
 *.sqlite3
 .cache/
