@@ -120,8 +120,8 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({
 
         {/* App Logo & Badge */}
         <div className="relative mx-auto w-16 h-16 rounded-3xl bg-gradient-to-tr from-emerald-600 to-teal-400 p-0.5 shadow-xl shadow-emerald-500/30 mb-4">
-          <div className="w-full h-full bg-slate-950 rounded-[22px] flex items-center justify-center text-emerald-400">
-            <span className="font-arabic text-3xl font-bold">م</span>
+          <div className="w-full h-full bg-slate-950 rounded-[22px] flex items-center justify-center overflow-hidden">
+            <img src="/logo.svg" alt="Majlis Al-Aman Logo" className="w-11 h-11 object-contain" />
           </div>
           <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>

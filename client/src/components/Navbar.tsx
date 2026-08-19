@@ -53,8 +53,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           className="flex items-center space-x-3 cursor-pointer group"
         >
           <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 p-0.5 shadow-lg shadow-emerald-900/30 flex items-center justify-center transform group-hover:scale-105 transition-transform">
-            <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
-              <span className="font-arabic text-emerald-400 text-xl font-bold">م</span>
+            <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center overflow-hidden">
+              <img src="/logo.svg" alt="Majlis Al-Aman Logo" className="w-7 h-7 object-contain" />
             </div>
           </div>
           <div>
