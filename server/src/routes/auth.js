@@ -5,6 +5,7 @@ import { OAuth2Client } from 'google-auth-library';
 import { query, get, run } from '../db.js';
 import { JWT_SECRET, authenticateToken } from '../middleware/auth.js';
 import { updateStreakAndAchievements } from '../services/streakService.js';
+import { sendPasswordResetEmail } from '../services/emailService.js';
 import { User, UserSettings, Streak } from '../models/index.js';
 import mongoose from 'mongoose';
 
@@ -279,40 +280,131 @@ router.put('/profile', authenticateToken, async (req, res) => {
   }
 });
 
-// Forgot / Reset Password Mock Simulation
+// Real-Time Forgot Password (Generates 6-Digit OTP & Sends Email)
 router.post('/forgot-password', async (req, res) => {
-  const { email } = req.body;
-  if (!email) return res.status(400).json({ error: 'Email is required' });
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email address is required' });
 
-  const user = await get('SELECT id FROM users WHERE email = ?', [email.trim().toLowerCase()]);
-  if (!user) {
-    // Return friendly message even if user doesn't exist for security
-    return res.json({ message: 'If an account exists with this email, password reset instructions have been sent.' });
+    const cleanEmail = email.trim().toLowerCase();
+    const user = await get('SELECT id, name, email FROM users WHERE lower(email) = ?', [cleanEmail]);
+
+    if (!user) {
+      // Return clear error if email is not registered so user knows immediately
+      return res.status(404).json({ error: 'No account found with this email address. Please check spelling or register.' });
+    }
+
+    // Generate 6-digit cryptographic numeric OTP
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    // Valid for 10 minutes
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+
+    // Invalidate previous OTPs for this email
+    await run('UPDATE password_resets SET used = 1 WHERE email = ?', [cleanEmail]);
+
+    // Save new OTP
+    await run(
+      'INSERT INTO password_resets (email, otp_code, expires_at, used) VALUES (?, ?, ?, 0)',
+      [cleanEmail, otpCode, expiresAt]
+    );
+
+    // Send real-time email via Nodemailer
+    try {
+      await sendPasswordResetEmail(cleanEmail, otpCode, user.name);
+      console.log(`[OTP] Sent 6-digit code [${otpCode}] to ${cleanEmail}`);
+    } catch (mailErr) {
+      console.error('[OTP] Failed to send email via SMTP, logged code:', otpCode, mailErr.message);
+    }
+
+    res.json({
+      message: `A 6-digit verification code has been sent to ${cleanEmail}. Please check your inbox and spam folder.`
+    });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ error: 'Server error generating password reset code' });
   }
-
-  res.json({
-    message: 'Password reset link sent to your email. (Demo simulation: Reset code is 123456)',
-    demoResetCode: '123456'
-  });
 });
 
+// Verify OTP Code
+router.post('/verify-otp', async (req, res) => {
+  try {
+    const { email, otpCode } = req.body;
+    if (!email || !otpCode) {
+      return res.status(400).json({ error: 'Email and OTP code are required' });
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanOtp = otpCode.trim();
+
+    const record = await get(
+      `SELECT * FROM password_resets 
+       WHERE email = ? AND otp_code = ? AND used = 0 AND datetime(expires_at) > datetime('now')
+       ORDER BY id DESC LIMIT 1`,
+      [cleanEmail, cleanOtp]
+    );
+
+    if (!record) {
+      return res.status(400).json({ error: 'Invalid or expired 6-digit OTP code. Please request a new one.' });
+    }
+
+    res.json({ message: 'OTP verified successfully.', valid: true });
+  } catch (error) {
+    console.error('Verify OTP error:', error);
+    res.status(500).json({ error: 'Server error verifying OTP code' });
+  }
+});
+
+// Reset Password with Verified OTP
 router.post('/reset-password', async (req, res) => {
-  const { email, resetCode, newPassword } = req.body;
-  if (!email || !newPassword) {
-    return res.status(400).json({ error: 'Email and new password are required' });
+  try {
+    const { email, otpCode, newPassword, confirmPassword } = req.body;
+    if (!email || !otpCode || !newPassword) {
+      return res.status(400).json({ error: 'Email, OTP code, and new password are required' });
+    }
+
+    if (confirmPassword && newPassword !== confirmPassword) {
+      return res.status(400).json({ error: 'Passwords do not match' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanOtp = otpCode.trim();
+
+    const user = await get('SELECT id, email, username FROM users WHERE lower(email) = ?', [cleanEmail]);
+    if (!user) {
+      return res.status(404).json({ error: 'User account not found' });
+    }
+
+    // Verify OTP
+    const resetRecord = await get(
+      `SELECT * FROM password_resets 
+       WHERE email = ? AND otp_code = ? AND used = 0 AND datetime(expires_at) > datetime('now')
+       ORDER BY id DESC LIMIT 1`,
+      [cleanEmail, cleanOtp]
+    );
+
+    if (!resetRecord) {
+      return res.status(400).json({ error: 'Invalid or expired OTP code. Please request a fresh code.' });
+    }
+
+    // Hash new password and update user
+    const salt = await bcrypt.genSalt(10);
+    const password_hash = await bcrypt.hash(newPassword, salt);
+
+    await run('UPDATE users SET password_hash = ? WHERE id = ?', [password_hash, user.id]);
+
+    // Mark OTP as used
+    await run('UPDATE password_resets SET used = 1 WHERE id = ?', [resetRecord.id]);
+
+    res.json({ message: 'Your password has been successfully reset! You may now sign in with your new password.' });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({ error: 'Server error resetting password' });
   }
-
-  const user = await get('SELECT id FROM users WHERE email = ?', [email.trim().toLowerCase()]);
-  if (!user) {
-    return res.status(400).json({ error: 'User not found' });
-  }
-
-  const salt = await bcrypt.genSalt(10);
-  const password_hash = await bcrypt.hash(newPassword, salt);
-
-  await run('UPDATE users SET password_hash = ? WHERE id = ?', [password_hash, user.id]);
-
-  res.json({ message: 'Password has been successfully updated. You may now log in.' });
 });
 
 export default router;

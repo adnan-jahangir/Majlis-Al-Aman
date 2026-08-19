@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { X, Lock, Mail, User, ArrowRight, Sparkles, CheckCircle2, ShieldCheck } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Lock, Mail, User, ArrowRight, Sparkles, CheckCircle2, ShieldCheck, KeyRound, RefreshCw } from 'lucide-react';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
@@ -29,13 +29,31 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [regPassword, setRegPassword] = useState('');
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
   
-  // Forgot password
+  // Forgot password OTP flow
+  const [forgotStep, setForgotStep] = useState<'email' | 'otp'>('email');
   const [forgotEmail, setForgotEmail] = useState('');
-  const [resetMsg, setResetMsg] = useState<string | null>(null);
+  const [otpCode, setOtpCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [resendTimer, setResendTimer] = useState<number>(0);
+  const [resetSuccessMsg, setResetSuccessMsg] = useState<string | null>(null);
 
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Resend Timer Countdown
+  useEffect(() => {
+    let interval: any = null;
+    if (resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [resendTimer]);
 
   // Google OAuth Login Hook (Google Cloud Console integration)
   const triggerGoogleOAuth = useGoogleLogin({
@@ -79,6 +97,72 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   if (!isOpen) return null;
 
+  // Handle Send OTP
+  const handleSendOtp = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!forgotEmail) {
+      setError('Please enter your account email address');
+      return;
+    }
+
+    setError(null);
+    setIsLoading(true);
+    try {
+      const res = await api.forgotPassword(forgotEmail);
+      setForgotStep('otp');
+      setResendTimer(60); // 60s cooldown
+      setResetSuccessMsg(res.message);
+    } catch (err: any) {
+      setError(err.message || 'Could not send reset code. Please check email.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle Reset Password with OTP
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (!otpCode || otpCode.trim().length !== 6) {
+      setError('Please enter the valid 6-digit OTP code sent to your email');
+      return;
+    }
+    if (!newPassword || newPassword.length < 6) {
+      setError('New password must be at least 6 characters');
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const res = await api.resetPassword({
+        email: forgotEmail.trim().toLowerCase(),
+        otpCode: otpCode.trim(),
+        newPassword,
+        confirmPassword: confirmNewPassword
+      });
+
+      setResetSuccessMsg(res.message || 'Password reset successfully!');
+      // Pre-fill login
+      setLoginIdentifier(forgotEmail);
+      setPassword(newPassword);
+
+      setTimeout(() => {
+        setMode('login');
+        setForgotStep('email');
+        setResetSuccessMsg('Your password has been changed! You may now sign in.');
+      }, 1500);
+    } catch (err: any) {
+      setError(err.message || 'Failed to reset password. Please verify your OTP.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -110,12 +194,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           confirmPassword: regConfirmPassword
         });
         onClose();
-      } else if (mode === 'forgot') {
-        if (!forgotEmail) {
-          throw new Error('Please enter your account email');
-        }
-        const res = await api.forgotPassword(forgotEmail);
-        setResetMsg(res.message || 'Password reset link sent to your email.');
       }
     } catch (err: any) {
       setError(err.message || 'Authentication failed. Please check your credentials.');
@@ -145,20 +223,22 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         {/* Header with Official Logo */}
         <div className="text-center mb-5">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-400 p-0.5 shadow-lg shadow-emerald-500/20 mb-3">
-            <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center">
-              <img src="/logo.svg" alt="Majlis Al-Aman Logo" className="w-9 h-9" />
+            <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center overflow-hidden">
+              <img src="/logo.svg" alt="Majlis Al-Aman Logo" className="w-9 h-9 object-contain" />
             </div>
           </div>
 
           <h2 className="text-2xl font-black text-white tracking-tight">
             {mode === 'login' && 'Sign In to Majlis'}
             {mode === 'register' && 'Create Your Account'}
-            {mode === 'forgot' && 'Reset Password'}
+            {mode === 'forgot' && (forgotStep === 'email' ? 'Forgot Password?' : 'Enter 6-Digit OTP')}
           </h2>
           <p className="text-xs text-slate-300 mt-1">
             {mode === 'login' && 'Log your 5 daily prayers, tilawah streaks & spiritual stats'}
             {mode === 'register' && 'Join Majlis Al-Aman and build consistency in worship'}
-            {mode === 'forgot' && 'Enter your email to receive recovery instructions'}
+            {mode === 'forgot' && (forgotStep === 'email' 
+              ? 'Enter your registered email to receive an instant OTP code' 
+              : `Enter the 6-digit OTP code sent to ${forgotEmail}`)}
           </p>
         </div>
 
@@ -167,7 +247,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <div className="flex rounded-2xl bg-slate-950/80 p-1 border border-slate-800 mb-5">
             <button
               type="button"
-              onClick={() => { setMode('login'); setError(null); }}
+              onClick={() => { setMode('login'); setError(null); setResetSuccessMsg(null); }}
               className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${
                 mode === 'login'
                   ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20'
@@ -178,7 +258,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </button>
             <button
               type="button"
-              onClick={() => { setMode('register'); setError(null); }}
+              onClick={() => { setMode('register'); setError(null); setResetSuccessMsg(null); }}
               className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${
                 mode === 'register'
                   ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20'
@@ -237,160 +317,185 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           </div>
         )}
 
-        {/* Reset Success */}
-        {resetMsg && (
-          <div className="p-3 mb-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs">
-            {resetMsg}
+        {/* Success / OTP Notification */}
+        {resetSuccessMsg && (
+          <div className="p-3 mb-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-start space-x-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+            <span>{resetSuccessMsg}</span>
           </div>
         )}
 
-        {/* Dynamic Form */}
-        <form onSubmit={handleAuthSubmit} className="space-y-3.5">
-          {/* LOGIN MODE */}
-          {mode === 'login' && (
-            <>
-              <div>
-                <label className="block text-[11px] font-bold text-slate-300 mb-1 uppercase tracking-wider">
-                  Email or Username
-                </label>
-                <div className="relative">
-                  <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
-                  <input
-                    type="text"
-                    required
-                    value={loginIdentifier}
-                    onChange={(e) => setLoginIdentifier(e.target.value)}
-                    placeholder="your@email.com or username"
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-white text-sm focus:outline-none focus:border-emerald-500 transition-colors"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between items-center mb-1">
-                  <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider">
-                    Password
+        {/* LOGIN & REGISTER FORM */}
+        {mode !== 'forgot' && (
+          <form onSubmit={handleAuthSubmit} className="space-y-3.5">
+            {/* LOGIN MODE */}
+            {mode === 'login' && (
+              <>
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-300 mb-1 uppercase tracking-wider">
+                    Email or Username
                   </label>
-                  <button
-                    type="button"
-                    onClick={() => { setMode('forgot'); setError(null); setResetMsg(null); }}
-                    className="text-[11px] text-emerald-400 hover:text-emerald-300 font-semibold transition-colors"
-                  >
-                    Forgot Password?
-                  </button>
+                  <div className="relative">
+                    <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
+                    <input
+                      type="text"
+                      required
+                      value={loginIdentifier}
+                      onChange={(e) => setLoginIdentifier(e.target.value)}
+                      placeholder="your@email.com or username"
+                      className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-white text-sm focus:outline-none focus:border-emerald-500 transition-colors"
+                    />
+                  </div>
                 </div>
-                <div className="relative">
-                  <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
-                  <input
-                    type="password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-white text-sm focus:outline-none focus:border-emerald-500 transition-colors"
-                  />
-                </div>
-              </div>
-            </>
-          )}
 
-          {/* REGISTER MODE */}
-          {mode === 'register' && (
-            <>
-              <div>
-                <label className="block text-[11px] font-bold text-slate-300 mb-1 uppercase tracking-wider">
-                  Full Name (আপনার নাম) <span className="text-emerald-400">*</span>
-                </label>
-                <div className="relative">
-                  <User className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
-                  <input
-                    type="text"
-                    required
-                    value={regName}
-                    onChange={(e) => setRegName(e.target.value)}
-                    placeholder="e.g. Adnan Tariq"
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-white text-sm focus:outline-none focus:border-emerald-500 transition-colors"
-                  />
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider">
+                      Password
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => { 
+                        setMode('forgot'); 
+                        setForgotStep('email');
+                        setForgotEmail(loginIdentifier.includes('@') ? loginIdentifier : '');
+                        setError(null); 
+                        setResetSuccessMsg(null); 
+                      }}
+                      className="text-[11px] text-emerald-400 hover:text-emerald-300 font-semibold transition-colors"
+                    >
+                      Forgot Password?
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
+                    <input
+                      type="password"
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-white text-sm focus:outline-none focus:border-emerald-500 transition-colors"
+                    />
+                  </div>
                 </div>
-              </div>
+              </>
+            )}
 
-              <div>
-                <label className="block text-[11px] font-bold text-slate-300 mb-1 uppercase tracking-wider">
-                  Username (ইউজারনেম) <span className="text-emerald-400">*</span>
-                </label>
-                <div className="relative">
-                  <span className="text-slate-500 font-bold absolute left-3.5 top-2.5 text-sm">@</span>
-                  <input
-                    type="text"
-                    required
-                    value={regUsername}
-                    onChange={(e) => setRegUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
-                    placeholder="adnan_islam"
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-white text-sm focus:outline-none focus:border-emerald-500 transition-colors"
-                  />
+            {/* REGISTER MODE */}
+            {mode === 'register' && (
+              <>
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-300 mb-1 uppercase tracking-wider">
+                    Full Name (আপনার নাম) <span className="text-emerald-400">*</span>
+                  </label>
+                  <div className="relative">
+                    <User className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
+                    <input
+                      type="text"
+                      required
+                      value={regName}
+                      onChange={(e) => setRegName(e.target.value)}
+                      placeholder="e.g. Adnan Tariq"
+                      className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-white text-sm focus:outline-none focus:border-emerald-500 transition-colors"
+                    />
+                  </div>
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-[11px] font-bold text-slate-300 mb-1 uppercase tracking-wider">
-                  Email Address (ইমেইল) <span className="text-emerald-400">*</span>
-                </label>
-                <div className="relative">
-                  <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
-                  <input
-                    type="email"
-                    required
-                    value={regEmail}
-                    onChange={(e) => setRegEmail(e.target.value)}
-                    placeholder="name@domain.com"
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-white text-sm focus:outline-none focus:border-emerald-500 transition-colors"
-                  />
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-300 mb-1 uppercase tracking-wider">
+                    Username (ইউজারনেম) <span className="text-emerald-400">*</span>
+                  </label>
+                  <div className="relative">
+                    <span className="text-slate-500 font-bold absolute left-3.5 top-2.5 text-sm">@</span>
+                    <input
+                      type="text"
+                      required
+                      value={regUsername}
+                      onChange={(e) => setRegUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                      placeholder="adnan_islam"
+                      className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-white text-sm focus:outline-none focus:border-emerald-500 transition-colors"
+                    />
+                  </div>
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-[11px] font-bold text-slate-300 mb-1 uppercase tracking-wider">
-                  Password (পাসওয়ার্ড - min 6 chars) <span className="text-emerald-400">*</span>
-                </label>
-                <div className="relative">
-                  <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
-                  <input
-                    type="password"
-                    required
-                    minLength={6}
-                    value={regPassword}
-                    onChange={(e) => setRegPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-white text-sm focus:outline-none focus:border-emerald-500 transition-colors"
-                  />
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-300 mb-1 uppercase tracking-wider">
+                    Email Address (ইমেইল) <span className="text-emerald-400">*</span>
+                  </label>
+                  <div className="relative">
+                    <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
+                    <input
+                      type="email"
+                      required
+                      value={regEmail}
+                      onChange={(e) => setRegEmail(e.target.value)}
+                      placeholder="name@domain.com"
+                      className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-white text-sm focus:outline-none focus:border-emerald-500 transition-colors"
+                    />
+                  </div>
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-[11px] font-bold text-slate-300 mb-1 uppercase tracking-wider">
-                  Confirm Password (পাসওয়ার্ড নিশ্চিত করুন) <span className="text-emerald-400">*</span>
-                </label>
-                <div className="relative">
-                  <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
-                  <input
-                    type="password"
-                    required
-                    minLength={6}
-                    value={regConfirmPassword}
-                    onChange={(e) => setRegConfirmPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-white text-sm focus:outline-none focus:border-emerald-500 transition-colors"
-                  />
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-300 mb-1 uppercase tracking-wider">
+                    Password (পাসওয়ার্ড - min 6 chars) <span className="text-emerald-400">*</span>
+                  </label>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
+                    <input
+                      type="password"
+                      required
+                      minLength={6}
+                      value={regPassword}
+                      onChange={(e) => setRegPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-white text-sm focus:outline-none focus:border-emerald-500 transition-colors"
+                    />
+                  </div>
                 </div>
-              </div>
-            </>
-          )}
 
-          {/* FORGOT MODE */}
-          {mode === 'forgot' && (
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-300 mb-1 uppercase tracking-wider">
+                    Confirm Password (পাসওয়ার্ড নিশ্চিত করুন) <span className="text-emerald-400">*</span>
+                  </label>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
+                    <input
+                      type="password"
+                      required
+                      minLength={6}
+                      value={regConfirmPassword}
+                      onChange={(e) => setRegConfirmPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-white text-sm focus:outline-none focus:border-emerald-500 transition-colors"
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+
+            <button
+              type="submit"
+              disabled={isLoading || isGoogleLoading}
+              className="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-sm shadow-xl shadow-emerald-500/25 transition-all flex items-center justify-center space-x-2 disabled:opacity-60 transform active:scale-[0.99] mt-2"
+            >
+              <span>
+                {isLoading 
+                  ? 'Processing...' 
+                  : mode === 'login' 
+                    ? 'Sign In (লগইন করুন) →' 
+                    : 'Create Free Account (একাউন্ট তৈরি করুন) →'}
+              </span>
+            </button>
+          </form>
+        )}
+
+        {/* FORGOT PASSWORD 2-STEP REAL-TIME OTP FLOW */}
+        {mode === 'forgot' && forgotStep === 'email' && (
+          <form onSubmit={handleSendOtp} className="space-y-4">
             <div>
               <label className="block text-[11px] font-bold text-slate-300 mb-1 uppercase tracking-wider">
-                Account Email Address
+                Enter Your Account Email Address
               </label>
               <div className="relative">
                 <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
@@ -403,25 +508,107 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-white text-sm focus:outline-none focus:border-emerald-500 transition-colors"
                 />
               </div>
+              <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">
+                আপনার ইমেইলে সাথে সাথে একটি ৬-সংখ্যার ভেরিফিকেশন ওটিপি (OTP) কোড পাঠানো হবে।
+              </p>
             </div>
-          )}
 
-          <button
-            type="submit"
-            disabled={isLoading || isGoogleLoading}
-            className="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-sm shadow-xl shadow-emerald-500/25 transition-all flex items-center justify-center space-x-2 disabled:opacity-60 transform active:scale-[0.99] mt-2"
-          >
-            <span>
-              {isLoading 
-                ? 'Processing...' 
-                : mode === 'login' 
-                  ? 'Sign In (লগইন করুন) →' 
-                  : mode === 'register' 
-                    ? 'Create Free Account (একাউন্ট তৈরি করুন) →' 
-                    : 'Send Recovery Link'}
-            </span>
-          </button>
-        </form>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-sm shadow-xl shadow-emerald-500/25 transition-all flex items-center justify-center space-x-2 disabled:opacity-60 transform active:scale-[0.99]"
+            >
+              <Mail className="w-4 h-4" />
+              <span>{isLoading ? 'Sending OTP Code...' : 'Send OTP Code (ওটিপি পাঠান) →'}</span>
+            </button>
+          </form>
+        )}
+
+        {mode === 'forgot' && forgotStep === 'otp' && (
+          <form onSubmit={handleResetPassword} className="space-y-3.5">
+            {/* 6-Digit OTP Box */}
+            <div>
+              <div className="flex justify-between items-center mb-1">
+                <label className="block text-[11px] font-bold text-emerald-400 uppercase tracking-wider">
+                  6-Digit OTP Code (৬-সংখ্যার ওটিপি কোড) *
+                </label>
+                {resendTimer > 0 ? (
+                  <span className="text-[10px] text-slate-400 font-mono">
+                    Resend in {resendTimer}s
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => handleSendOtp()}
+                    className="text-[10px] text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1"
+                  >
+                    <RefreshCw className="w-3 h-3" /> Resend OTP
+                  </button>
+                )}
+              </div>
+
+              <div className="relative">
+                <KeyRound className="w-4 h-4 text-emerald-400 absolute left-3.5 top-3" />
+                <input
+                  type="text"
+                  required
+                  maxLength={6}
+                  value={otpCode}
+                  onChange={(e) => setOtpCode(e.target.value.replace(/[^0-9]/g, ''))}
+                  placeholder="123456"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-950 border border-emerald-500/50 text-emerald-300 font-mono font-bold text-center tracking-[6px] text-lg focus:outline-none focus:border-emerald-400 transition-colors"
+                />
+              </div>
+            </div>
+
+            {/* New Password */}
+            <div>
+              <label className="block text-[11px] font-bold text-slate-300 mb-1 uppercase tracking-wider">
+                New Password (নতুন পাসওয়ার্ড) *
+              </label>
+              <div className="relative">
+                <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-white text-sm focus:outline-none focus:border-emerald-500 transition-colors"
+                />
+              </div>
+            </div>
+
+            {/* Confirm New Password */}
+            <div>
+              <label className="block text-[11px] font-bold text-slate-300 mb-1 uppercase tracking-wider">
+                Confirm New Password *
+              </label>
+              <div className="relative">
+                <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  value={confirmNewPassword}
+                  onChange={(e) => setConfirmNewPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-white text-sm focus:outline-none focus:border-emerald-500 transition-colors"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-sm shadow-xl shadow-emerald-500/25 transition-all flex items-center justify-center space-x-2 disabled:opacity-60 transform active:scale-[0.99] mt-2"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              <span>{isLoading ? 'Resetting Password...' : 'Reset Password & Sign In 🔒'}</span>
+            </button>
+          </form>
+        )}
 
         {/* Footer Navigation Switcher */}
         <div className="mt-4 pt-3 border-t border-slate-800 text-center text-xs text-slate-400">
@@ -429,7 +616,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <p>
               Don't have an account?{' '}
               <button
-                onClick={() => { setMode('register'); setError(null); }}
+                onClick={() => { setMode('register'); setError(null); setResetSuccessMsg(null); }}
                 className="text-emerald-400 hover:text-emerald-300 font-bold ml-1 transition-colors"
               >
                 Sign Up / Create Account
@@ -441,7 +628,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <p>
               Already have an account?{' '}
               <button
-                onClick={() => { setMode('login'); setError(null); }}
+                onClick={() => { setMode('login'); setError(null); setResetSuccessMsg(null); }}
                 className="text-emerald-400 hover:text-emerald-300 font-bold ml-1 transition-colors"
               >
                 Sign In (লগইন)
@@ -450,12 +637,24 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           )}
 
           {mode === 'forgot' && (
-            <button
-              onClick={() => { setMode('login'); setError(null); }}
-              className="text-emerald-400 hover:text-emerald-300 font-bold transition-colors"
-            >
-              ← Back to Sign In
-            </button>
+            <div className="flex justify-between items-center">
+              {forgotStep === 'otp' && (
+                <button
+                  type="button"
+                  onClick={() => { setForgotStep('email'); setError(null); }}
+                  className="text-slate-400 hover:text-slate-200 transition-colors"
+                >
+                  ← Change Email
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => { setMode('login'); setError(null); setResetSuccessMsg(null); }}
+                className="text-emerald-400 hover:text-emerald-300 font-bold ml-auto transition-colors"
+              >
+                Back to Sign In →
+              </button>
+            </div>
           )}
         </div>
       </div>

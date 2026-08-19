@@ -73,7 +73,8 @@ export const api = {
   googleAuth: (body: any) => request<{ message: string; token: string; user: User }>('/auth/google', { method: 'POST', body: JSON.stringify(body) }),
   getMe: () => request<{ user: User; settings: UserSettings; streak: StreakInfo; achievements: string[] }>('/auth/me'),
   updateProfile: (body: any) => request<{ message: string; user: User }>('/auth/profile', { method: 'PUT', body: JSON.stringify(body) }),
-  forgotPassword: (email: string) => request<{ message: string; demoResetCode?: string }>('/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) }),
+  forgotPassword: (email: string) => request<{ message: string }>('/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) }),
+  verifyOtp: (body: { email: string; otpCode: string }) => request<{ message: string; valid: boolean }>('/auth/verify-otp', { method: 'POST', body: JSON.stringify(body) }),
   resetPassword: (body: any) => request<{ message: string }>('/auth/reset-password', { method: 'POST', body: JSON.stringify(body) }),
 
   // Prayers

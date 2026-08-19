@@ -213,6 +213,18 @@ export const initDb = async () => {
       )
     `);
 
+    // Password Reset OTPs
+    await run(`
+      CREATE TABLE IF NOT EXISTS password_resets (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        email TEXT NOT NULL,
+        otp_code TEXT NOT NULL,
+        expires_at DATETIME NOT NULL,
+        used INTEGER DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
     console.log('Database initialized successfully.');
   } catch (err) {
     console.error('Init DB error fallback:', err.message);
