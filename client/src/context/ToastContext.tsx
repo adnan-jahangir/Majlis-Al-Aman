@@ -35,11 +35,12 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const newToast: ToastItem = {
       id,
       type: 'success',
-      duration: 4000,
+      duration: 2200,
       ...options
     };
 
-    setToasts(prev => [newToast, ...prev.slice(0, 3)]); // show max 4 toasts
+    // Show only the latest toast (max 1) so rapid clicks don't stack up and block screen
+    setToasts([newToast]);
 
     if (newToast.duration && newToast.duration > 0) {
       setTimeout(() => {
@@ -54,7 +55,7 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     <ToastContext.Provider value={{ showToast, removeToast }}>
       {children}
       {/* Toast Notification Container */}
-      <div className="fixed top-5 right-4 sm:right-6 z-50 flex flex-col space-y-3 pointer-events-none max-w-sm w-full">
+      <div className="fixed top-4 right-4 sm:top-5 sm:right-6 z-50 flex flex-col pointer-events-none max-w-[320px] sm:max-w-sm w-full">
         {toasts.map(toast => {
           const isSuccess = toast.type === 'success';
           const isError = toast.type === 'error';
@@ -62,43 +63,43 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           return (
             <div
               key={toast.id}
-              className={`pointer-events-auto flex items-center justify-between p-4 rounded-xl border shadow-xl backdrop-blur-lg transition-all duration-300 transform translate-y-0 ${
+              className={`pointer-events-auto flex items-center justify-between py-2 px-3 sm:py-2.5 sm:px-3.5 rounded-xl border shadow-lg backdrop-blur-md transition-all duration-200 animate-in fade-in slide-in-from-top-2 ${
                 isSuccess
-                  ? 'bg-slate-900/90 border-emerald-500/40 text-slate-100 shadow-emerald-950/40'
+                  ? 'bg-slate-900/95 border-emerald-500/40 text-slate-100 shadow-emerald-950/30'
                   : isError
-                  ? 'bg-slate-900/90 border-rose-500/40 text-slate-100 shadow-rose-950/40'
-                  : 'bg-slate-900/90 border-amber-500/40 text-slate-100 shadow-amber-950/40'
+                  ? 'bg-slate-900/95 border-rose-500/40 text-slate-100 shadow-rose-950/30'
+                  : 'bg-slate-900/95 border-amber-500/40 text-slate-100 shadow-amber-950/30'
               }`}
             >
-              <div className="flex items-center space-x-3 pr-2">
+              <div className="flex items-center space-x-2.5 pr-2 min-w-0">
                 {isSuccess ? (
-                  <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                 ) : isError ? (
-                  <AlertCircle className="w-5 h-5 text-rose-400 shrink-0" />
+                  <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
                 ) : (
-                  <Info className="w-5 h-5 text-amber-400 shrink-0" />
+                  <Info className="w-4 h-4 text-amber-400 shrink-0" />
                 )}
-                <p className="text-sm font-medium leading-snug">{toast.message}</p>
+                <p className="text-xs sm:text-sm font-medium leading-tight truncate">{toast.message}</p>
               </div>
 
-              <div className="flex items-center space-x-2 shrink-0">
+              <div className="flex items-center space-x-1.5 shrink-0">
                 {toast.onUndo && (
                   <button
                     onClick={() => {
                       toast.onUndo?.();
                       removeToast(toast.id);
                     }}
-                    className="flex items-center space-x-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 transition-colors border border-emerald-500/30"
+                    className="flex items-center space-x-1 px-2 py-0.5 text-[11px] font-medium rounded-md bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 transition-colors border border-emerald-500/30"
                   >
-                    <RotateCcw className="w-3 h-3" />
+                    <RotateCcw className="w-2.5 h-2.5" />
                     <span>{toast.undoLabel || 'Undo'}</span>
                   </button>
                 )}
                 <button
                   onClick={() => removeToast(toast.id)}
-                  className="p-1 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+                  className="p-1 rounded-md text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
