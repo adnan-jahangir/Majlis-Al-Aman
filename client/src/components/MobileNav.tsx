@@ -4,9 +4,9 @@ import {
   CalendarDays, 
   Trophy, 
   User as UserIcon,
-  Plus,
-  Users
+  Plus
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 interface MobileNavProps {
   activeTab: string;
@@ -19,10 +19,12 @@ export const MobileNav: React.FC<MobileNavProps> = ({
   setActiveTab,
   onOpenQuranModal
 }) => {
+  const { user, isAuthenticated } = useAuth();
+
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 backdrop-blur-2xl border-t border-white/[0.09] px-3 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-2xl">
+    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 backdrop-blur-2xl border-t border-white/[0.09] px-2 pt-1.5 pb-[max(0.65rem,env(safe-area-inset-bottom))] shadow-2xl">
       <div className="flex items-center justify-between relative max-w-md mx-auto">
-        {/* Home / Dashboard */}
+        {/* 1. Home / Dashboard */}
         <button
           type="button"
           onClick={() => setActiveTab('dashboard')}
@@ -30,24 +32,34 @@ export const MobileNav: React.FC<MobileNavProps> = ({
             activeTab === 'dashboard' ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-slate-200'
           }`}
         >
-          <LayoutDashboard className="w-5 h-5" />
+          <div className="relative">
+            <LayoutDashboard className="w-5 h-5" />
+            {activeTab === 'dashboard' && (
+              <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-emerald-400 rounded-full" />
+            )}
+          </div>
           <span className="text-[10px] mt-1 tracking-tight font-medium">Namaz</span>
         </button>
 
-        {/* Community Feed */}
+        {/* 2. Leaderboard / Rankings */}
         <button
           type="button"
-          onClick={() => setActiveTab('community')}
+          onClick={() => setActiveTab('leaderboard')}
           className={`flex-1 flex flex-col items-center justify-center py-1 rounded-xl transition-all active:scale-95 ${
-            activeTab === 'community' ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-slate-200'
+            activeTab === 'leaderboard' ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-slate-200'
           }`}
         >
-          <Users className="w-5 h-5" />
-          <span className="text-[10px] mt-1 tracking-tight font-medium">Ummah</span>
+          <div className="relative">
+            <Trophy className="w-5 h-5" />
+            {activeTab === 'leaderboard' && (
+              <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-emerald-400 rounded-full" />
+            )}
+          </div>
+          <span className="text-[10px] mt-1 tracking-tight font-medium">Rankings</span>
         </button>
 
-        {/* Center Floating "+" Quick-Log Button */}
-        <div className="relative -top-3.5 px-1.5 shrink-0">
+        {/* 3. Center Floating "+" Quick-Log Button */}
+        <div className="relative -top-3 px-1 shrink-0">
           <button
             type="button"
             onClick={onOpenQuranModal}
@@ -58,19 +70,7 @@ export const MobileNav: React.FC<MobileNavProps> = ({
           </button>
         </div>
 
-        {/* Leaderboard / Rankings */}
-        <button
-          type="button"
-          onClick={() => setActiveTab('leaderboard')}
-          className={`flex-1 flex flex-col items-center justify-center py-1 rounded-xl transition-all active:scale-95 ${
-            activeTab === 'leaderboard' ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          <Trophy className="w-5 h-5" />
-          <span className="text-[10px] mt-1 tracking-tight font-medium">Rankings</span>
-        </button>
-
-        {/* Calendar & History */}
+        {/* 4. Calendar & History */}
         <button
           type="button"
           onClick={() => setActiveTab('calendar')}
@@ -78,8 +78,40 @@ export const MobileNav: React.FC<MobileNavProps> = ({
             activeTab === 'calendar' ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-slate-200'
           }`}
         >
-          <CalendarDays className="w-5 h-5" />
+          <div className="relative">
+            <CalendarDays className="w-5 h-5" />
+            {activeTab === 'calendar' && (
+              <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-emerald-400 rounded-full" />
+            )}
+          </div>
           <span className="text-[10px] mt-1 tracking-tight font-medium">Calendar</span>
+        </button>
+
+        {/* 5. Profile & Settings */}
+        <button
+          type="button"
+          onClick={() => setActiveTab('profile')}
+          className={`flex-1 flex flex-col items-center justify-center py-1 rounded-xl transition-all active:scale-95 ${
+            activeTab === 'profile' || activeTab === 'settings' ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <div className="relative">
+            {isAuthenticated && user?.avatar ? (
+              <img
+                src={user.avatar}
+                alt={user.name}
+                className={`w-5 h-5 rounded-full object-cover border ${
+                  activeTab === 'profile' ? 'border-emerald-400 ring-1 ring-emerald-400' : 'border-slate-700'
+                }`}
+              />
+            ) : (
+              <UserIcon className="w-5 h-5" />
+            )}
+            {(activeTab === 'profile' || activeTab === 'settings') && (
+              <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-emerald-400 rounded-full" />
+            )}
+          </div>
+          <span className="text-[10px] mt-1 tracking-tight font-medium">Profile</span>
         </button>
       </div>
     </nav>

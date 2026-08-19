@@ -72,49 +72,52 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Right Action Icons & User Controls */}
-        <div className="flex items-center space-x-2 sm:space-x-3">
-          {/* Tasbih Counter Trigger */}
-          <button
-            type="button"
-            onClick={onOpenTasbih}
-            className="p-2 rounded-xl text-slate-300 bg-slate-900/80 hover:bg-slate-800 hover:text-emerald-400 border border-slate-800 transition-colors flex items-center space-x-1 text-xs font-medium"
-            title="Digital Tasbih & Dhikr"
-          >
-            <Sparkles className="w-4 h-4 text-emerald-400" />
-            <span className="hidden sm:inline">Tasbih</span>
-          </button>
-
-          {/* Qibla Compass Trigger */}
-          <button
-            type="button"
-            onClick={onOpenQibla}
-            className="p-2 rounded-xl text-slate-300 bg-slate-900/80 hover:bg-slate-800 hover:text-emerald-400 border border-slate-800 transition-colors flex items-center space-x-1 text-xs font-medium"
-            title="Qibla Compass"
-          >
-            <Compass className="w-4 h-4 text-amber-400" />
-            <span className="hidden sm:inline">Qibla</span>
-          </button>
-
-          {/* Daily Adhkar Trigger */}
-          {onOpenAdhkar && (
+        <div className="flex items-center space-x-1.5 sm:space-x-3">
+          {/* Desktop-only Quick Tool Triggers (Tasbih, Qibla, Adhkar) */}
+          <div className="hidden md:flex items-center space-x-2">
+            {/* Tasbih Counter Trigger */}
             <button
               type="button"
-              onClick={onOpenAdhkar}
-              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/35 text-amber-300 text-xs font-bold transition-all shadow-sm"
-              title="Daily Morning & Evening Adhkar"
+              onClick={onOpenTasbih}
+              className="p-2 rounded-xl text-slate-300 bg-slate-900/80 hover:bg-slate-800 hover:text-emerald-400 border border-slate-800 transition-colors flex items-center space-x-1 text-xs font-medium"
+              title="Digital Tasbih & Dhikr"
             >
-              <Sun className="w-4 h-4 text-amber-400" />
-              <span>Adhkar</span>
+              <Sparkles className="w-4 h-4 text-emerald-400" />
+              <span>Tasbih</span>
             </button>
-          )}
+
+            {/* Qibla Compass Trigger */}
+            <button
+              type="button"
+              onClick={onOpenQibla}
+              className="p-2 rounded-xl text-slate-300 bg-slate-900/80 hover:bg-slate-800 hover:text-emerald-400 border border-slate-800 transition-colors flex items-center space-x-1 text-xs font-medium"
+              title="Qibla Compass"
+            >
+              <Compass className="w-4 h-4 text-amber-400" />
+              <span>Qibla</span>
+            </button>
+
+            {/* Daily Adhkar Trigger */}
+            {onOpenAdhkar && (
+              <button
+                type="button"
+                onClick={onOpenAdhkar}
+                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/35 text-amber-300 text-xs font-bold transition-all shadow-sm"
+                title="Daily Morning & Evening Adhkar"
+              >
+                <Sun className="w-4 h-4 text-amber-400" />
+                <span>Adhkar</span>
+              </button>
+            )}
+          </div>
 
           {/* Streak Quick Pill (if authenticated) */}
           {isAuthenticated && streak && (
             <div 
               onClick={() => setActiveTab('profile')}
-              className="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold cursor-pointer hover:bg-amber-500/20 transition-colors"
+              className="flex items-center space-x-1 px-2.5 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold cursor-pointer hover:bg-amber-500/20 transition-colors"
             >
-              <Flame className="w-4 h-4 text-amber-400 animate-flame" />
+              <Flame className="w-3.5 h-3.5 text-amber-400 animate-flame" />
               <span>{streak.current_streak}d</span>
             </div>
           )}
