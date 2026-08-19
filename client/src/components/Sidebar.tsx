@@ -4,7 +4,6 @@ import {
   CalendarDays, 
   BarChart3, 
   Trophy, 
-  Users, 
   User as UserIcon, 
   Settings, 
   ShieldCheck,
@@ -30,7 +29,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'calendar', label: 'Calendar & History', icon: CalendarDays },
     { id: 'statistics', label: 'Statistics', icon: BarChart3 },
     { id: 'leaderboard', label: 'Leaderboard', icon: Trophy },
-    { id: 'community', label: 'Community Feed', icon: Users },
     { id: 'profile', label: 'Profile & Badges', icon: UserIcon },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];

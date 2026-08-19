@@ -15,7 +15,6 @@ import { DashboardPage } from './pages/DashboardPage';
 import { CalendarPage } from './pages/CalendarPage';
 import { StatisticsPage } from './pages/StatisticsPage';
 import { LeaderboardPage } from './pages/LeaderboardPage';
-import { CommunityPage } from './pages/CommunityPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { SettingsPage } from './pages/SettingsPage';
 import { AdminPage } from './pages/AdminPage';
@@ -132,14 +131,6 @@ const MainApp: React.FC = () => {
           {activeTab === 'statistics' && <StatisticsPage />}
           {activeTab === 'leaderboard' && (
             <LeaderboardPage
-              onOpenAuth={() => {
-                setAuthModalInitialMode('login');
-                setIsAuthModalOpen(true);
-              }}
-            />
-          )}
-          {activeTab === 'community' && (
-            <CommunityPage
               onOpenAuth={() => {
                 setAuthModalInitialMode('login');
                 setIsAuthModalOpen(true);
