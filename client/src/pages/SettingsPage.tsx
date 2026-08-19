@@ -609,11 +609,11 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ onOpenInstall }) => 
           {/* Individual Prayer Reminders */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             {[
-              { key: 'fajr_reminder', label: 'Fajr Dawn Adhan Reminder' },
-              { key: 'dhuhr_reminder', label: 'Dhuhr Noon Adhan Reminder' },
-              { key: 'asr_reminder', label: 'Asr Afternoon Adhan Reminder' },
-              { key: 'maghrib_reminder', label: 'Maghrib Sunset Adhan Reminder' },
-              { key: 'isha_reminder', label: 'Isha Night Adhan Reminder' },
+              { key: 'fajr_reminder', label: 'Fajr Prayer Notification' },
+              { key: 'dhuhr_reminder', label: 'Dhuhr Prayer Notification' },
+              { key: 'asr_reminder', label: 'Asr Prayer Notification' },
+              { key: 'maghrib_reminder', label: 'Maghrib Prayer Notification' },
+              { key: 'isha_reminder', label: 'Isha Prayer Notification' },
               { key: 'quran_reminder', label: 'Daily Quran Reading Reminder' },
               { key: 'streak_reminder', label: 'Streak Preservation Warning' }
             ].map((item) => {

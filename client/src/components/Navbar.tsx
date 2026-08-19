@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { 
   Compass, 
-  Volume2, 
-  VolumeX, 
   Sparkles, 
   ShieldCheck, 
   LogOut, 
@@ -30,12 +28,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenInstall
 }) => {
   const { user, isAuthenticated, streak, logout } = useAuth();
-  const [isMuted, setIsMuted] = useState<boolean>(true);
   const [showUserMenu, setShowUserMenu] = useState<boolean>(false);
-
-  const toggleAudio = () => {
-    setIsMuted(!isMuted);
-  };
 
   const currentDate = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
@@ -100,16 +93,6 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <Compass className="w-4 h-4 text-amber-400" />
             <span className="hidden sm:inline">Qibla</span>
-          </button>
-
-          {/* Audio Toggle */}
-          <button
-            type="button"
-            onClick={toggleAudio}
-            className="p-2 rounded-xl text-slate-400 bg-slate-900/80 hover:bg-slate-800 hover:text-slate-200 border border-slate-800 transition-colors"
-            title={isMuted ? "Unmute Adhan Audio Reminders" : "Mute Adhan"}
-          >
-            {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-emerald-400" />}
           </button>
 
           {/* Install App Quick Button */}
