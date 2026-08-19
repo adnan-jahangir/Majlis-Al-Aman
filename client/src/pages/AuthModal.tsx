@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Lock, Mail, User, ArrowRight, Sparkles, CheckCircle2, ShieldCheck, KeyRound, RefreshCw } from 'lucide-react';
+import { X, Lock, Mail, CheckCircle2, ShieldCheck, KeyRound, RefreshCw, ArrowRight } from 'lucide-react';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
@@ -7,7 +7,7 @@ import { api } from '../services/api';
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  initialMode?: 'login' | 'register' | 'forgot';
+  initialMode?: 'login' | 'forgot';
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({
@@ -15,20 +15,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   onClose,
   initialMode = 'login'
 }) => {
-  const { login, loginWithGoogle, register } = useAuth();
-  const [mode, setMode] = useState<'login' | 'register' | 'forgot'>(initialMode);
+  const { login, loginWithGoogle } = useAuth();
+  const [mode, setMode] = useState<'login' | 'forgot'>(initialMode === 'forgot' ? 'forgot' : 'login');
   
   // Login form fields
   const [loginIdentifier, setLoginIdentifier] = useState('');
   const [password, setPassword] = useState('');
 
-  // Register form fields
-  const [regName, setRegName] = useState('');
-  const [regUsername, setRegUsername] = useState('');
-  const [regEmail, setRegEmail] = useState('');
-  const [regPassword, setRegPassword] = useState('');
-  const [regConfirmPassword, setRegConfirmPassword] = useState('');
-  
   // Forgot password OTP flow
   const [forgotStep, setForgotStep] = useState<'email' | 'otp'>('email');
   const [forgotEmail, setForgotEmail] = useState('');
@@ -55,12 +48,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     };
   }, [resendTimer]);
 
-  // Google OAuth Login Hook (Google Cloud Console integration)
+  // Google OAuth Login & 1-Click Sign-Up Hook
   const triggerGoogleOAuth = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       try {
         setIsGoogleLoading(true);
-        // Fetch user info from Google API with access token
         const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
           headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
         });
@@ -147,14 +139,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       });
 
       setResetSuccessMsg(res.message || 'Password reset successfully!');
-      // Pre-fill login
       setLoginIdentifier(forgotEmail);
       setPassword(newPassword);
 
       setTimeout(() => {
         setMode('login');
         setForgotStep('email');
-        setResetSuccessMsg('Your password has been changed! You may now sign in.');
+        setResetSuccessMsg('Your password has been updated! You can now sign in.');
       }, 1500);
     } catch (err: any) {
       setError(err.message || 'Failed to reset password. Please verify your OTP.');
@@ -163,40 +154,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }
   };
 
-  const handleAuthSubmit = async (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setIsLoading(true);
 
     try {
-      if (mode === 'login') {
-        if (!loginIdentifier || !password) {
-          throw new Error('Please enter your email/username and password');
-        }
-        await login({ login: loginIdentifier, password });
-        onClose();
-      } else if (mode === 'register') {
-        if (!regName || !regUsername || !regEmail || !regPassword) {
-          throw new Error('Please fill in all required registration fields');
-        }
-        if (regPassword.length < 6) {
-          throw new Error('Password must be at least 6 characters');
-        }
-        if (regPassword !== regConfirmPassword) {
-          throw new Error('Passwords do not match');
-        }
-
-        await register({
-          name: regName.trim(),
-          username: regUsername.trim().toLowerCase(),
-          email: regEmail.trim().toLowerCase(),
-          password: regPassword,
-          confirmPassword: regConfirmPassword
-        });
-        onClose();
+      if (!loginIdentifier || !password) {
+        throw new Error('Please enter your email/username and password');
       }
+      await login({ login: loginIdentifier, password });
+      onClose();
     } catch (err: any) {
-      setError(err.message || 'Authentication failed. Please check your credentials.');
+      setError(err.message || 'Invalid credentials. Please check your email or password.');
     } finally {
       setIsLoading(false);
     }
@@ -221,7 +191,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         </button>
 
         {/* Header with Official Logo */}
-        <div className="text-center mb-5">
+        <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-400 p-0.5 shadow-lg shadow-emerald-500/20 mb-3">
             <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center overflow-hidden">
               <img src="/logo.svg" alt="Majlis Al-Aman Logo" className="w-9 h-9 object-contain" />
@@ -230,57 +200,27 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
           <h2 className="text-2xl font-black text-white tracking-tight">
             {mode === 'login' && 'Sign In to Majlis'}
-            {mode === 'register' && 'Create Your Account'}
-            {mode === 'forgot' && (forgotStep === 'email' ? 'Forgot Password?' : 'Enter 6-Digit OTP')}
+            {mode === 'forgot' && (forgotStep === 'email' ? 'Reset Password' : 'Enter 6-Digit OTP')}
           </h2>
           <p className="text-xs text-slate-300 mt-1">
-            {mode === 'login' && 'Log your 5 daily prayers, tilawah streaks & spiritual stats'}
-            {mode === 'register' && 'Join Majlis Al-Aman and build consistency in worship'}
+            {mode === 'login' && 'Track your 5 daily prayers, tilawah streaks & spiritual sanctuary'}
             {mode === 'forgot' && (forgotStep === 'email' 
-              ? 'Enter your registered email to receive an instant OTP code' 
+              ? 'Enter your account email to receive an instant OTP code' 
               : `Enter the 6-digit OTP code sent to ${forgotEmail}`)}
           </p>
         </div>
 
-        {/* Mode Switch Tabs (Login / Register) */}
-        {mode !== 'forgot' && (
-          <div className="flex rounded-2xl bg-slate-950/80 p-1 border border-slate-800 mb-5">
-            <button
-              type="button"
-              onClick={() => { setMode('login'); setError(null); setResetSuccessMsg(null); }}
-              className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${
-                mode === 'login'
-                  ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              Sign In (লগইন)
-            </button>
-            <button
-              type="button"
-              onClick={() => { setMode('register'); setError(null); setResetSuccessMsg(null); }}
-              className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${
-                mode === 'register'
-                  ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              Register (রেজিস্টার)
-            </button>
-          </div>
-        )}
-
-        {/* Google One-Click Sign In / Sign Up Button */}
-        {mode !== 'forgot' && (
-          <div className="mb-4 space-y-3">
+        {/* Primary 1-Click Google Sign-In & Sign-Up Button */}
+        {mode === 'login' && (
+          <div className="mb-5 space-y-3">
             <button
               type="button"
               onClick={handleGoogleClick}
               disabled={isGoogleLoading || isLoading}
-              className="w-full flex items-center justify-center space-x-3 py-3 px-4 rounded-2xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-xs sm:text-sm shadow-lg shadow-white/5 transition-all transform hover:scale-[1.01] active:scale-[0.99] disabled:opacity-60"
+              className="w-full flex items-center justify-center space-x-3 py-3.5 px-4 rounded-2xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-sm shadow-xl shadow-white/10 transition-all transform hover:scale-[1.01] active:scale-[0.99] disabled:opacity-60 border border-slate-200"
             >
               {/* Google G Logo */}
-              <svg className="w-4 h-4" viewBox="0 0 24 24">
+              <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path
                   fill="#4285F4"
                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -298,10 +238,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
                 />
               </svg>
-              <span>{isGoogleLoading ? 'Connecting Google...' : mode === 'login' ? 'Continue with Google' : 'Sign Up with Google'}</span>
+              <span>{isGoogleLoading ? 'Signing in with Google...' : 'Continue with Google (১-ক্লিকে লগইন)'}</span>
             </button>
+            <p className="text-[10px] text-center text-emerald-400/90 font-medium">
+              ✨ গুগল দিয়ে সরাসরি সাইন ইন ও নতুন একাউন্ট খুলে ফেলুন
+            </p>
 
-            <div className="flex items-center space-x-3 my-3">
+            <div className="flex items-center space-x-3 my-4">
               <div className="flex-1 h-px bg-slate-800" />
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">or with email</span>
               <div className="flex-1 h-px bg-slate-800" />
@@ -317,7 +260,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           </div>
         )}
 
-        {/* Success / OTP Notification */}
+        {/* Success Message */}
         {resetSuccessMsg && (
           <div className="p-3 mb-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-start space-x-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
@@ -325,167 +268,64 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           </div>
         )}
 
-        {/* LOGIN & REGISTER FORM */}
-        {mode !== 'forgot' && (
-          <form onSubmit={handleAuthSubmit} className="space-y-3.5">
-            {/* LOGIN MODE */}
-            {mode === 'login' && (
-              <>
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-300 mb-1 uppercase tracking-wider">
-                    Email or Username
-                  </label>
-                  <div className="relative">
-                    <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
-                    <input
-                      type="text"
-                      required
-                      value={loginIdentifier}
-                      onChange={(e) => setLoginIdentifier(e.target.value)}
-                      placeholder="your@email.com or username"
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-white text-sm focus:outline-none focus:border-emerald-500 transition-colors"
-                    />
-                  </div>
-                </div>
+        {/* EMAIL LOGIN FORM */}
+        {mode === 'login' && (
+          <form onSubmit={handleLoginSubmit} className="space-y-3.5">
+            <div>
+              <label className="block text-[11px] font-bold text-slate-300 mb-1 uppercase tracking-wider">
+                Email or Username
+              </label>
+              <div className="relative">
+                <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
+                <input
+                  type="text"
+                  required
+                  value={loginIdentifier}
+                  onChange={(e) => setLoginIdentifier(e.target.value)}
+                  placeholder="your@email.com or username"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-white text-sm focus:outline-none focus:border-emerald-500 transition-colors"
+                />
+              </div>
+            </div>
 
-                <div>
-                  <div className="flex justify-between items-center mb-1">
-                    <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider">
-                      Password
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => { 
-                        setMode('forgot'); 
-                        setForgotStep('email');
-                        setForgotEmail(loginIdentifier.includes('@') ? loginIdentifier : '');
-                        setError(null); 
-                        setResetSuccessMsg(null); 
-                      }}
-                      className="text-[11px] text-emerald-400 hover:text-emerald-300 font-semibold transition-colors"
-                    >
-                      Forgot Password?
-                    </button>
-                  </div>
-                  <div className="relative">
-                    <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
-                    <input
-                      type="password"
-                      required
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="••••••••"
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-white text-sm focus:outline-none focus:border-emerald-500 transition-colors"
-                    />
-                  </div>
-                </div>
-              </>
-            )}
-
-            {/* REGISTER MODE */}
-            {mode === 'register' && (
-              <>
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-300 mb-1 uppercase tracking-wider">
-                    Full Name (আপনার নাম) <span className="text-emerald-400">*</span>
-                  </label>
-                  <div className="relative">
-                    <User className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
-                    <input
-                      type="text"
-                      required
-                      value={regName}
-                      onChange={(e) => setRegName(e.target.value)}
-                      placeholder="e.g. Adnan Tariq"
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-white text-sm focus:outline-none focus:border-emerald-500 transition-colors"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-300 mb-1 uppercase tracking-wider">
-                    Username (ইউজারনেম) <span className="text-emerald-400">*</span>
-                  </label>
-                  <div className="relative">
-                    <span className="text-slate-500 font-bold absolute left-3.5 top-2.5 text-sm">@</span>
-                    <input
-                      type="text"
-                      required
-                      value={regUsername}
-                      onChange={(e) => setRegUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
-                      placeholder="adnan_islam"
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-white text-sm focus:outline-none focus:border-emerald-500 transition-colors"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-300 mb-1 uppercase tracking-wider">
-                    Email Address (ইমেইল) <span className="text-emerald-400">*</span>
-                  </label>
-                  <div className="relative">
-                    <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
-                    <input
-                      type="email"
-                      required
-                      value={regEmail}
-                      onChange={(e) => setRegEmail(e.target.value)}
-                      placeholder="name@domain.com"
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-white text-sm focus:outline-none focus:border-emerald-500 transition-colors"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-300 mb-1 uppercase tracking-wider">
-                    Password (পাসওয়ার্ড - min 6 chars) <span className="text-emerald-400">*</span>
-                  </label>
-                  <div className="relative">
-                    <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
-                    <input
-                      type="password"
-                      required
-                      minLength={6}
-                      value={regPassword}
-                      onChange={(e) => setRegPassword(e.target.value)}
-                      placeholder="••••••••"
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-white text-sm focus:outline-none focus:border-emerald-500 transition-colors"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-300 mb-1 uppercase tracking-wider">
-                    Confirm Password (পাসওয়ার্ড নিশ্চিত করুন) <span className="text-emerald-400">*</span>
-                  </label>
-                  <div className="relative">
-                    <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
-                    <input
-                      type="password"
-                      required
-                      minLength={6}
-                      value={regConfirmPassword}
-                      onChange={(e) => setRegConfirmPassword(e.target.value)}
-                      placeholder="••••••••"
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-white text-sm focus:outline-none focus:border-emerald-500 transition-colors"
-                    />
-                  </div>
-                </div>
-              </>
-            )}
+            <div>
+              <div className="flex justify-between items-center mb-1">
+                <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider">
+                  Password
+                </label>
+                <button
+                  type="button"
+                  onClick={() => { 
+                    setMode('forgot'); 
+                    setForgotStep('email');
+                    setForgotEmail(loginIdentifier.includes('@') ? loginIdentifier : '');
+                    setError(null); 
+                    setResetSuccessMsg(null); 
+                  }}
+                  className="text-[11px] text-emerald-400 hover:text-emerald-300 font-semibold transition-colors"
+                >
+                  Forgot Password?
+                </button>
+              </div>
+              <div className="relative">
+                <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-white text-sm focus:outline-none focus:border-emerald-500 transition-colors"
+                />
+              </div>
+            </div>
 
             <button
               type="submit"
               disabled={isLoading || isGoogleLoading}
               className="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-sm shadow-xl shadow-emerald-500/25 transition-all flex items-center justify-center space-x-2 disabled:opacity-60 transform active:scale-[0.99] mt-2"
             >
-              <span>
-                {isLoading 
-                  ? 'Processing...' 
-                  : mode === 'login' 
-                    ? 'Sign In (লগইন করুন) →' 
-                    : 'Create Free Account (একাউন্ট তৈরি করুন) →'}
-              </span>
+              <span>{isLoading ? 'Signing in...' : 'Sign In with Password →'}</span>
             </button>
           </form>
         )}
@@ -611,32 +451,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         )}
 
         {/* Footer Navigation Switcher */}
-        <div className="mt-4 pt-3 border-t border-slate-800 text-center text-xs text-slate-400">
-          {mode === 'login' && (
-            <p>
-              Don't have an account?{' '}
-              <button
-                onClick={() => { setMode('register'); setError(null); setResetSuccessMsg(null); }}
-                className="text-emerald-400 hover:text-emerald-300 font-bold ml-1 transition-colors"
-              >
-                Sign Up / Create Account
-              </button>
-            </p>
-          )}
-
-          {mode === 'register' && (
-            <p>
-              Already have an account?{' '}
-              <button
-                onClick={() => { setMode('login'); setError(null); setResetSuccessMsg(null); }}
-                className="text-emerald-400 hover:text-emerald-300 font-bold ml-1 transition-colors"
-              >
-                Sign In (লগইন)
-              </button>
-            </p>
-          )}
-
-          {mode === 'forgot' && (
+        <div className="mt-5 pt-3 border-t border-slate-800 text-center text-xs text-slate-400">
+          {mode === 'forgot' ? (
             <div className="flex justify-between items-center">
               {forgotStep === 'otp' && (
                 <button
@@ -655,6 +471,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 Back to Sign In →
               </button>
             </div>
+          ) : (
+            <p className="text-slate-500 text-[11px]">
+              🔒 Protected with industry standard encryption
+            </p>
           )}
         </div>
       </div>
