@@ -1,0 +1,36 @@
+{
+  "name": "Majlis Al-Aman - Islamic Companion & Namaz Tracker",
+  "short_name": "Majlis Al-Aman",
+  "description": "Daily 5 Namaz Tracker, Quran Tilawah Journal, Accurate Prayer Times, Qibla Compass, and Digital Tasbih.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#020617",
+  "theme_color": "#10b981",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["lifestyle", "productivity", "utilities"],
+  "shortcuts": [
+    {
+      "name": "Daily Salah",
+      "url": "/",
+      "description": "Track today's 5 prayers"
+    },
+    {
+      "name": "Log Quran",
+      "url": "/?openQuran=true",
+      "description": "Log Quran recitation"
+    },
+    {
+      "name": "Digital Tasbih",
+      "url": "/?openTasbih=true",
+      "description": "Open Dhikr Counter"
+    }
+  ]
+}

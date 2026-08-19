@@ -7,6 +7,7 @@ import { MobileNav } from './components/MobileNav';
 import { QuranModal } from './components/QuranModal';
 import { TasbihModal } from './components/TasbihModal';
 import { QiblaModal } from './components/QiblaModal';
+import { InstallAppModal } from './components/InstallAppModal';
 import { AuthModal } from './pages/AuthModal';
 import { LandingPage } from './pages/LandingPage';
 import { DashboardPage } from './pages/DashboardPage';
@@ -28,6 +29,7 @@ const MainApp: React.FC = () => {
   const [isQuranModalOpen, setIsQuranModalOpen] = useState<boolean>(false);
   const [isTasbihOpen, setIsTasbihOpen] = useState<boolean>(false);
   const [isQiblaOpen, setIsQiblaOpen] = useState<boolean>(false);
+  const [isInstallModalOpen, setIsInstallModalOpen] = useState<boolean>(false);
   const [viewingLanding, setViewingLanding] = useState<boolean>(false);
 
   if (isLoading) {
@@ -58,6 +60,7 @@ const MainApp: React.FC = () => {
           }}
           onOpenTasbih={() => setIsTasbihOpen(true)}
           onOpenQibla={() => setIsQiblaOpen(true)}
+          onOpenInstall={() => setIsInstallModalOpen(true)}
         />
         <LandingPage
           onGetStarted={() => {
@@ -81,6 +84,10 @@ const MainApp: React.FC = () => {
           city={settings?.location_city}
           country={settings?.location_country}
         />
+        <InstallAppModal
+          isOpenManual={isInstallModalOpen}
+          onCloseManual={() => setIsInstallModalOpen(false)}
+        />
       </>
     );
   }
@@ -97,6 +104,7 @@ const MainApp: React.FC = () => {
         setActiveTab={setActiveTab}
         onOpenTasbih={() => setIsTasbihOpen(true)}
         onOpenQibla={() => setIsQiblaOpen(true)}
+        onOpenInstall={() => setIsInstallModalOpen(true)}
       />
 
       {/* Main Layout: Sidebar + Main Content Container */}
@@ -157,6 +165,12 @@ const MainApp: React.FC = () => {
         onClose={() => setIsQiblaOpen(false)}
         city={settings?.location_city}
         country={settings?.location_country}
+      />
+
+      {/* Automatic & Manual App Install Modal */}
+      <InstallAppModal
+        isOpenManual={isInstallModalOpen}
+        onCloseManual={() => setIsInstallModalOpen(false)}
       />
     </div>
   );

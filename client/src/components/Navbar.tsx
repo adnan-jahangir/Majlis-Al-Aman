@@ -9,7 +9,8 @@ import {
   LogOut, 
   User as UserIcon,
   Flame,
-  Settings
+  Settings,
+  Download
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -18,13 +19,15 @@ interface NavbarProps {
   setActiveTab: (tab: string) => void;
   onOpenTasbih: () => void;
   onOpenQibla: () => void;
+  onOpenInstall?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   onOpenAuth,
   setActiveTab,
   onOpenTasbih,
-  onOpenQibla
+  onOpenQibla,
+  onOpenInstall
 }) => {
   const { user, isAuthenticated, streak, logout } = useAuth();
   const [isMuted, setIsMuted] = useState<boolean>(true);
@@ -108,6 +111,19 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-emerald-400" />}
           </button>
+
+          {/* Install App Quick Button */}
+          {onOpenInstall && (
+            <button
+              type="button"
+              onClick={onOpenInstall}
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 text-xs font-bold transition-all shadow-sm"
+              title="Install Official App on Device"
+            >
+              <Download className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="hidden md:inline">Install App</span>
+            </button>
+          )}
 
           {/* Streak Quick Pill (if authenticated) */}
           {isAuthenticated && streak && (
