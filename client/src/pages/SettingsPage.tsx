@@ -664,12 +664,12 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ onOpenInstall }) => 
                   </span>
                 </div>
                 <p className="text-xs text-slate-300 max-w-lg leading-relaxed">
-                  আপনার ডিভাইসে সরাসরি অ্যাপ হিসেবে ইন্সটল করুন। কোনো ইন্টারনেট ছাড়া অফলাইনে নামাজের ওয়াক্ত, কুরআন তিলাওয়াত ট্র্যাকার ও ডিজিটাল তাসবীহ ব্যবহার করুন।
+                  Install directly onto your mobile or desktop device. Enjoy full offline prayer times, Quran habit tracking, and digital Tasbih without needing constant internet access.
                 </p>
                 <div className="flex flex-wrap items-center gap-3 pt-1 text-[11px] text-emerald-400 font-semibold">
-                  <span>✓ ফুল স্ক্রিন মোবাইল এক্সপেরিয়েন্স</span>
-                  <span>✓ অফলাইন ডাটা সেভ</span>
-                  <span>✓ ইনস্ট্যান্ট হোমস্ক্রিন অ্যাক্সেস</span>
+                  <span>✓ Full Screen App Experience</span>
+                  <span>✓ Offline Habit Sync</span>
+                  <span>✓ Instant Home Screen Access</span>
                 </div>
               </div>
             </div>
@@ -687,7 +687,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ onOpenInstall }) => 
                   className="w-full sm:w-auto flex items-center justify-center space-x-2 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs sm:text-sm shadow-xl shadow-emerald-500/30 transition-all transform hover:scale-105 active:scale-95"
                 >
                   <Download className="w-4 h-4" />
-                  <span>এখনই অ্যাপ ইনস্টল করুন 📲</span>
+                  <span>Install Official App 📲</span>
                 </button>
               )}
             </div>
@@ -697,10 +697,10 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ onOpenInstall }) => 
           {isIOS && !isInstalled && (
             <div className="pt-3 border-t border-slate-800/80 text-xs text-slate-300 space-y-1">
               <p className="font-bold text-amber-300 flex items-center gap-1.5">
-                <Smartphone className="w-4 h-4" /> iPhone / iPad ইউজারদের জন্য:
+                <Smartphone className="w-4 h-4" /> Instructions for iPhone / iPad Users:
               </p>
               <p className="text-[11px] text-slate-400">
-                সাফারি ব্রাউজারের নিচে <strong>Share 📤</strong> বাটনে চাপ দিয়ে <strong>'Add to Home Screen' ➕</strong> সিলেক্ট করুন।
+                In Safari, tap the <strong>Share 📤</strong> button at the bottom and tap <strong>'Add to Home Screen' ➕</strong>.
               </p>
             </div>
           )}

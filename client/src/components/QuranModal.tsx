@@ -89,7 +89,7 @@ export const QuranModal: React.FC<QuranModalProps> = ({
           {/* Pages Read (Main Input) */}
           <div>
             <label className="block text-xs font-bold text-slate-200 mb-1.5 uppercase tracking-wider">
-              Pages Read Today (কত পৃষ্ঠা পঠিত) <span className="text-teal-400">*</span>
+              Pages Read Today <span className="text-teal-400">*</span>
             </label>
             <div className="relative">
               <input
@@ -103,7 +103,7 @@ export const QuranModal: React.FC<QuranModalProps> = ({
                 className="w-full px-4 py-3 rounded-2xl bg-slate-800/90 border border-slate-700 text-white text-base font-bold focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400/50 transition-all placeholder:font-normal"
               />
               <span className="absolute right-4 top-3 text-xs text-teal-300 font-bold uppercase tracking-wider pointer-events-none">
-                Pages / পৃষ্ঠা
+                Pages
               </span>
             </div>
           </div>
@@ -111,7 +111,7 @@ export const QuranModal: React.FC<QuranModalProps> = ({
           {/* Duration in Minutes */}
           <div>
             <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">
-              Time Spent (সময় - মিনিট)
+              Time Spent (Minutes)
             </label>
             <div className="relative">
               <input

@@ -94,7 +94,7 @@ export const DashboardPage: React.FC<{ onOpenTasbih?: () => void; onOpenQibla?: 
   };
 
   const handleCopyWisdom = () => {
-    const text = `${currentWisdom.arabic}\n\n${currentWisdom.bangla}\n${currentWisdom.english}\n— ${currentWisdom.reference}`;
+    const text = `${currentWisdom.arabic}\n\n${currentWisdom.english}\n— ${currentWisdom.reference}`;
     navigator.clipboard.writeText(text);
     showToast({ message: 'Ayah / Hadith copied to clipboard! 📋', type: 'success' });
   };
@@ -499,13 +499,8 @@ export const DashboardPage: React.FC<{ onOpenTasbih?: () => void; onOpenQibla?: 
                 {currentWisdom.arabic}
               </p>
 
-              {/* Bangla Translation */}
-              <p className="text-sm font-semibold text-emerald-300/95 leading-relaxed pt-1 select-text">
-                {currentWisdom.bangla}
-              </p>
-
               {/* English Translation */}
-              <p className="text-xs text-slate-300/90 italic leading-relaxed pt-0.5 select-text">
+              <p className="text-sm text-emerald-300/95 font-semibold leading-relaxed pt-1 select-text">
                 "{currentWisdom.english}"
               </p>
             </div>

@@ -92,7 +92,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({
       // Keep open to show iOS steps
     } else {
       // Fallback for browsers
-      alert("To install, click the browser menu (⋮) and select 'Install app' or 'Add to Home screen'.");
+      alert("To install, click your browser menu (⋮) and select 'Install app' or 'Add to Home screen'.");
       handleClose();
     }
   };
@@ -138,7 +138,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({
         </h3>
         
         <p className="text-xs text-slate-300 mt-1.5 leading-relaxed">
-          আপনার ফোনে সরাসরি অ্যাপ হিসেবে ইনস্টল করুন। অফলাইনে নামাজের সময়সূচি, কুরআন তিলাওয়াত ট্র্যাকার ও আযানের অ্যালার্ম পান।
+          Install directly onto your device for offline prayer timings, Quran habit tracker, and Tasbih counter.
         </p>
 
         {/* Features Highlights */}
@@ -147,19 +147,19 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({
             <div className="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
               <Check className="w-3 h-3" />
             </div>
-            <span>১-ক্লিকে ফুল স্ক্রিন মোবাইল অ্যাপ এক্সপেরিয়েন্স</span>
+            <span>1-Click Full Screen Mobile Experience</span>
           </div>
           <div className="flex items-center space-x-2 text-slate-200">
             <div className="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
               <Check className="w-3 h-3" />
             </div>
-            <span>সম্পূর্ণ অফলাইন সাপোর্ট ও ডাটা সেভ সুবিধা</span>
+            <span>Full Offline Support & Fast Local Data Sync</span>
           </div>
           <div className="flex items-center space-x-2 text-slate-200">
             <div className="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
               <Check className="w-3 h-3" />
             </div>
-            <span>ফোনের হোমস্ক্রিন থেকে সরাসরি ওপেন</span>
+            <span>Direct Home Screen & App Drawer Access</span>
           </div>
         </div>
 
@@ -167,12 +167,12 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({
         {isIOS ? (
           <div className="p-4 rounded-2xl bg-slate-800/80 border border-slate-700 text-left space-y-2 mb-4 text-xs text-slate-300">
             <p className="font-bold text-amber-300 flex items-center gap-1.5">
-              <Smartphone className="w-4 h-4" /> iPhone / iPad এ ইনস্টল করার নিয়ম:
+              <Smartphone className="w-4 h-4" /> How to install on iPhone / iPad:
             </p>
             <ol className="list-decimal list-inside space-y-1 text-[11px] text-slate-300">
-              <li>সাফারি ব্রাউজারের নিচে <Share className="w-3.5 h-3.5 inline text-emerald-400 mx-1" /> <strong>Share</strong> বাটনে চাপ দিন</li>
-              <li>নিচে স্ক্রল করে <PlusSquare className="w-3.5 h-3.5 inline text-emerald-400 mx-1" /> <strong>'Add to Home Screen'</strong> সিলেক্ট করুন</li>
-              <li>উপরে <strong>'Add'</strong> বাটনে চাপ দিন</li>
+              <li>In Safari, tap the <Share className="w-3.5 h-3.5 inline text-emerald-400 mx-1" /> <strong>Share</strong> button at the bottom</li>
+              <li>Scroll down and tap <PlusSquare className="w-3.5 h-3.5 inline text-emerald-400 mx-1" /> <strong>'Add to Home Screen'</strong></li>
+              <li>Tap <strong>'Add'</strong> in the top right corner</li>
             </ol>
           </div>
         ) : null}
@@ -184,7 +184,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({
             onClick={handleClose}
             className="flex-1 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors"
           >
-            পরে করব (Later)
+            Maybe Later
           </button>
           
           <button
@@ -193,7 +193,7 @@ export const InstallAppModal: React.FC<InstallAppModalProps> = ({
             className="flex-1 py-3 px-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 text-xs font-extrabold shadow-lg shadow-emerald-500/25 transition-all transform hover:scale-[1.02] flex items-center justify-center space-x-2"
           >
             <Download className="w-4 h-4" />
-            <span>এখনই ইনস্টল করুন 📲</span>
+            <span>Install App 📲</span>
           </button>
         </div>
       </div>

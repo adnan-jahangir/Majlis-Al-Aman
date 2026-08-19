@@ -238,10 +238,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
                 />
               </svg>
-              <span>{isGoogleLoading ? 'Signing in with Google...' : 'Continue with Google (১-ক্লিকে লগইন)'}</span>
+              <span>{isGoogleLoading ? 'Signing in with Google...' : 'Continue with Google (1-Click Sign In)'}</span>
             </button>
             <p className="text-[10px] text-center text-emerald-400/90 font-medium">
-              ✨ গুগল দিয়ে সরাসরি সাইন ইন ও নতুন একাউন্ট খুলে ফেলুন
+              ✨ Sign in or create an account instantly with Google
             </p>
 
             <div className="flex items-center space-x-3 my-4">
@@ -349,7 +349,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 />
               </div>
               <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">
-                আপনার ইমেইলে সাথে সাথে একটি ৬-সংখ্যার ভেরিফিকেশন ওটিপি (OTP) কোড পাঠানো হবে।
+                A 6-digit verification OTP code will be sent immediately to your email.
               </p>
             </div>
 
@@ -359,7 +359,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               className="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-sm shadow-xl shadow-emerald-500/25 transition-all flex items-center justify-center space-x-2 disabled:opacity-60 transform active:scale-[0.99]"
             >
               <Mail className="w-4 h-4" />
-              <span>{isLoading ? 'Sending OTP Code...' : 'Send OTP Code (ওটিপি পাঠান) →'}</span>
+              <span>{isLoading ? 'Sending OTP Code...' : 'Send OTP Code →'}</span>
             </button>
           </form>
         )}
@@ -370,7 +370,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <div>
               <div className="flex justify-between items-center mb-1">
                 <label className="block text-[11px] font-bold text-emerald-400 uppercase tracking-wider">
-                  6-Digit OTP Code (৬-সংখ্যার ওটিপি কোড) *
+                  6-Digit OTP Code *
                 </label>
                 {resendTimer > 0 ? (
                   <span className="text-[10px] text-slate-400 font-mono">
@@ -404,7 +404,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             {/* New Password */}
             <div>
               <label className="block text-[11px] font-bold text-slate-300 mb-1 uppercase tracking-wider">
-                New Password (নতুন পাসওয়ার্ড) *
+                New Password (min 6 characters) *
               </label>
               <div className="relative">
                 <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
