@@ -10,13 +10,19 @@ import {
   Search,
   Sparkles,
   CheckCircle2,
-  Globe
+  Globe,
+  Download,
+  Smartphone
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { UserSettings } from '../types';
 
-export const SettingsPage: React.FC = () => {
+interface SettingsPageProps {
+  onOpenInstall?: () => void;
+}
+
+export const SettingsPage: React.FC<SettingsPageProps> = ({ onOpenInstall }) => {
   const { settings, updateUserSettings } = useAuth();
   const { showToast } = useToast();
 
@@ -25,6 +31,49 @@ export const SettingsPage: React.FC = () => {
   const [isDetectingLocation, setIsDetectingLocation] = useState(false);
   const [isSearchingCity, setIsSearchingCity] = useState(false);
   const [citySearchQuery, setCitySearchQuery] = useState('');
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isInstalled, setIsInstalled] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
+
+  useEffect(() => {
+    const isStandalone = 
+      window.matchMedia('(display-mode: standalone)').matches || 
+      (window.navigator as any).standalone === true ||
+      document.referrer.includes('android-app://');
+
+    if (isStandalone) {
+      setIsInstalled(true);
+    }
+
+    const isIosDevice = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
+    setIsIOS(isIosDevice);
+
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+  }, []);
+
+  const handleInstallApp = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setIsInstalled(true);
+        showToast({ message: 'App installed successfully! 📱', type: 'success' });
+      }
+      setDeferredPrompt(null);
+    } else if (onOpenInstall) {
+      onOpenInstall();
+    } else if (isIOS) {
+      showToast({ message: "On iOS, tap Share 📤 then 'Add to Home Screen' ➕", type: 'info' });
+    } else {
+      showToast({ message: "Click your browser menu (⋮) and select 'Install app' or 'Add to Home screen'", type: 'info' });
+    }
+  };
 
   useEffect(() => {
     if (settings) {
@@ -595,8 +644,70 @@ export const SettingsPage: React.FC = () => {
           </div>
         </div>
 
+        {/* Section 5: Official Mobile App Installation */}
+        <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-emerald-950/40 via-slate-900 to-slate-900/90 border border-emerald-500/40 relative overflow-hidden shadow-2xl space-y-4">
+          <div className="absolute -top-12 -right-12 w-48 h-48 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
+          
+          <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+            <div className="flex items-start space-x-4">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-400 p-0.5 shadow-xl shadow-emerald-500/30 shrink-0">
+                <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center overflow-hidden">
+                  <img src="/logo.svg" alt="Majlis Al-Aman Logo" className="w-9 h-9 object-contain" />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <div className="flex items-center space-x-2">
+                  <h3 className="font-extrabold text-lg text-white">Majlis Al-Aman Official Mobile App</h3>
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                    PWA & Capacitor
+                  </span>
+                </div>
+                <p className="text-xs text-slate-300 max-w-lg leading-relaxed">
+                  আপনার ডিভাইসে সরাসরি অ্যাপ হিসেবে ইন্সটল করুন। কোনো ইন্টারনেট ছাড়া অফলাইনে নামাজের ওয়াক্ত, কুরআন তিলাওয়াত ট্র্যাকার ও ডিজিটাল তাসবীহ ব্যবহার করুন।
+                </p>
+                <div className="flex flex-wrap items-center gap-3 pt-1 text-[11px] text-emerald-400 font-semibold">
+                  <span>✓ ফুল স্ক্রিন মোবাইল এক্সপেরিয়েন্স</span>
+                  <span>✓ অফলাইন ডাটা সেভ</span>
+                  <span>✓ ইনস্ট্যান্ট হোমস্ক্রিন অ্যাক্সেস</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="shrink-0">
+              {isInstalled ? (
+                <div className="flex items-center space-x-2 px-5 py-3 rounded-2xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold text-xs shadow-inner">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  <span>Installed on this Device ✓</span>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleInstallApp}
+                  className="w-full sm:w-auto flex items-center justify-center space-x-2 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs sm:text-sm shadow-xl shadow-emerald-500/30 transition-all transform hover:scale-105 active:scale-95"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>এখনই অ্যাপ ইনস্টল করুন 📲</span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* iOS Guide */}
+          {isIOS && !isInstalled && (
+            <div className="pt-3 border-t border-slate-800/80 text-xs text-slate-300 space-y-1">
+              <p className="font-bold text-amber-300 flex items-center gap-1.5">
+                <Smartphone className="w-4 h-4" /> iPhone / iPad ইউজারদের জন্য:
+              </p>
+              <p className="text-[11px] text-slate-400">
+                সাফারি ব্রাউজারের নিচে <strong>Share 📤</strong> বাটনে চাপ দিয়ে <strong>'Add to Home Screen' ➕</strong> সিলেক্ট করুন।
+              </p>
+            </div>
+          )}
+        </div>
+
         {/* Save Button Bar */}
-        <div className="flex justify-end">
+        <div className="flex justify-end pt-2">
           <button
             type="submit"
             disabled={isSaving}

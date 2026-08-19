@@ -129,7 +129,7 @@ const MainApp: React.FC = () => {
           {activeTab === 'leaderboard' && <LeaderboardPage />}
           {activeTab === 'community' && <CommunityPage />}
           {activeTab === 'profile' && <ProfilePage />}
-          {activeTab === 'settings' && <SettingsPage />}
+          {activeTab === 'settings' && <SettingsPage onOpenInstall={() => setIsInstallModalOpen(true)} />}
           {activeTab === 'admin' && <AdminPage />}
         </main>
       </div>
