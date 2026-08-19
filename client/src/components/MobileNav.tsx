@@ -3,24 +3,23 @@ import {
   LayoutDashboard, 
   CalendarDays, 
   Trophy, 
-  User as UserIcon,
+  BookHeart,
   Plus
 } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
 
 interface MobileNavProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
   onOpenQuranModal: () => void;
+  onOpenDuaHub: () => void;
 }
 
 export const MobileNav: React.FC<MobileNavProps> = ({
   activeTab,
   setActiveTab,
-  onOpenQuranModal
+  onOpenQuranModal,
+  onOpenDuaHub
 }) => {
-  const { user, isAuthenticated } = useAuth();
-
   return (
     <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 backdrop-blur-2xl border-t border-white/[0.09] px-2 pt-1.5 pb-[max(0.65rem,env(safe-area-inset-bottom))] shadow-2xl">
       <div className="flex items-center justify-between relative max-w-md mx-auto">
@@ -87,31 +86,16 @@ export const MobileNav: React.FC<MobileNavProps> = ({
           <span className="text-[10px] mt-1 tracking-tight font-medium">Calendar</span>
         </button>
 
-        {/* 5. Profile & Settings */}
+        {/* 5. Dua & Dhikr Hub (Adhkar, Tasbih, Qibla) */}
         <button
           type="button"
-          onClick={() => setActiveTab('profile')}
-          className={`flex-1 flex flex-col items-center justify-center py-1 rounded-xl transition-all active:scale-95 ${
-            activeTab === 'profile' || activeTab === 'settings' ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-slate-200'
-          }`}
+          onClick={onOpenDuaHub}
+          className="flex-1 flex flex-col items-center justify-center py-1 rounded-xl transition-all active:scale-95 text-amber-400/90 hover:text-amber-300"
         >
           <div className="relative">
-            {isAuthenticated && user?.avatar ? (
-              <img
-                src={user.avatar}
-                alt={user.name}
-                className={`w-5 h-5 rounded-full object-cover border ${
-                  activeTab === 'profile' ? 'border-emerald-400 ring-1 ring-emerald-400' : 'border-slate-700'
-                }`}
-              />
-            ) : (
-              <UserIcon className="w-5 h-5" />
-            )}
-            {(activeTab === 'profile' || activeTab === 'settings') && (
-              <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-emerald-400 rounded-full" />
-            )}
+            <BookHeart className="w-5 h-5 text-amber-400" />
           </div>
-          <span className="text-[10px] mt-1 tracking-tight font-medium">Profile</span>
+          <span className="text-[10px] mt-1 tracking-tight font-medium text-amber-400/90">Dua</span>
         </button>
       </div>
     </nav>

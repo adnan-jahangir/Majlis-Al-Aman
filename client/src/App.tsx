@@ -9,6 +9,7 @@ import { TasbihModal } from './components/TasbihModal';
 import { QiblaModal } from './components/QiblaModal';
 import { InstallAppModal } from './components/InstallAppModal';
 import { AdhkarModal } from './components/AdhkarModal';
+import { DuaHubModal } from './components/DuaHubModal';
 import { AuthModal } from './pages/AuthModal';
 import { LandingPage } from './pages/LandingPage';
 import { DashboardPage } from './pages/DashboardPage';
@@ -30,6 +31,7 @@ const MainApp: React.FC = () => {
   const [isTasbihOpen, setIsTasbihOpen] = useState<boolean>(false);
   const [isQiblaOpen, setIsQiblaOpen] = useState<boolean>(false);
   const [isAdhkarOpen, setIsAdhkarOpen] = useState<boolean>(false);
+  const [isDuaHubOpen, setIsDuaHubOpen] = useState<boolean>(false);
   const [isInstallModalOpen, setIsInstallModalOpen] = useState<boolean>(false);
   const [viewingLanding, setViewingLanding] = useState<boolean>(false);
 
@@ -148,6 +150,7 @@ const MainApp: React.FC = () => {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         onOpenQuranModal={() => setIsQuranModalOpen(true)}
+        onOpenDuaHub={() => setIsDuaHubOpen(true)}
       />
 
       {/* Global Modals */}
@@ -177,6 +180,14 @@ const MainApp: React.FC = () => {
       />
 
       <AdhkarModal isOpen={isAdhkarOpen} onClose={() => setIsAdhkarOpen(false)} />
+
+      <DuaHubModal
+        isOpen={isDuaHubOpen}
+        onClose={() => setIsDuaHubOpen(false)}
+        onOpenAdhkar={() => setIsAdhkarOpen(true)}
+        onOpenTasbih={() => setIsTasbihOpen(true)}
+        onOpenQibla={() => setIsQiblaOpen(true)}
+      />
 
       {/* Automatic & Manual App Install Modal */}
       <InstallAppModal
