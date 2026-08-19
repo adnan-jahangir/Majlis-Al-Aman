@@ -10,9 +10,12 @@ import {
   Sparkles
 } from 'lucide-react';
 import { api } from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import { getGuestMonthHistory, getGuestDayDetail } from '../services/guestStorage';
 import { MonthHistoryResponse, DayDetailResponse, CalendarDay } from '../types';
 
 export const CalendarPage: React.FC = () => {
+  const { isAuthenticated } = useAuth();
   const today = new Date();
   const [year, setYear] = useState<number>(today.getFullYear());
   const [month, setMonth] = useState<number>(today.getMonth() + 1); // 1-12
@@ -24,11 +27,19 @@ export const CalendarPage: React.FC = () => {
 
   useEffect(() => {
     setIsLoading(true);
-    api.getMonthHistory(year, month)
-      .then(setHistoryData)
-      .catch(console.error)
-      .finally(() => setIsLoading(false));
-  }, [year, month]);
+    if (isAuthenticated) {
+      api.getMonthHistory(year, month)
+        .then(setHistoryData)
+        .catch((err) => {
+          console.error(err);
+          setHistoryData(getGuestMonthHistory(year, month));
+        })
+        .finally(() => setIsLoading(false));
+    } else {
+      setHistoryData(getGuestMonthHistory(year, month));
+      setIsLoading(false);
+    }
+  }, [year, month, isAuthenticated]);
 
   const handlePrevMonth = () => {
     if (month === 1) {
@@ -52,10 +63,16 @@ export const CalendarPage: React.FC = () => {
     setSelectedDate(dateStr);
     setIsDayLoading(true);
     try {
-      const res = await api.getDayDetail(dateStr);
-      setDayDetail(res);
+      if (isAuthenticated) {
+        const res = await api.getDayDetail(dateStr);
+        setDayDetail(res);
+      } else {
+        const res = getGuestDayDetail(dateStr);
+        setDayDetail(res);
+      }
     } catch (err) {
       console.error('Failed to fetch day detail:', err);
+      setDayDetail(getGuestDayDetail(dateStr));
     } finally {
       setIsDayLoading(false);
     }

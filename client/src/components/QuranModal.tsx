@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { X, BookOpen, Clock } from 'lucide-react';
 import { api } from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import { saveGuestQuran } from '../services/guestStorage';
 
 interface QuranModalProps {
   isOpen: boolean;
@@ -15,6 +17,7 @@ export const QuranModal: React.FC<QuranModalProps> = ({
   onSuccess,
   defaultPages = 10
 }) => {
+  const { isAuthenticated, settings } = useAuth();
   const [pagesRead, setPagesRead] = useState<number | ''>(defaultPages);
   const [durationMins, setDurationMins] = useState<number | ''>(20);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -33,10 +36,15 @@ export const QuranModal: React.FC<QuranModalProps> = ({
     setError(null);
 
     try {
-      await api.logQuranReading({
-        pagesRead: Number(pagesRead),
-        durationMins: durationMins ? Number(durationMins) : 0
-      });
+      if (isAuthenticated) {
+        await api.logQuranReading({
+          pagesRead: Number(pagesRead),
+          durationMins: durationMins ? Number(durationMins) : 0
+        });
+      } else {
+        const goal = settings?.daily_quran_goal || 10;
+        saveGuestQuran(Number(pagesRead), durationMins ? Number(durationMins) : 0, goal);
+      }
 
       onSuccess();
       onClose();

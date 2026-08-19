@@ -19,18 +19,29 @@ import {
   Award
 } from 'lucide-react';
 import { api } from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import { getGuestStats } from '../services/guestStorage';
 import { StatsResponse } from '../types';
 
 export const StatisticsPage: React.FC = () => {
+  const { isAuthenticated } = useAuth();
   const [stats, setStats] = useState<StatsResponse | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    api.getStats()
-      .then(setStats)
-      .catch(console.error)
-      .finally(() => setIsLoading(false));
-  }, []);
+    if (isAuthenticated) {
+      api.getStats()
+        .then(setStats)
+        .catch((err) => {
+          console.error(err);
+          setStats(getGuestStats());
+        })
+        .finally(() => setIsLoading(false));
+    } else {
+      setStats(getGuestStats());
+      setIsLoading(false);
+    }
+  }, [isAuthenticated]);
 
   if (isLoading) {
     return (

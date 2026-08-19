@@ -29,6 +29,12 @@ import {
   CalculatedPrayerTimes 
 } from '../types';
 import { calculateLocalPrayerTimes } from '../services/prayerTimeService';
+import { 
+  getGuestPrayers, 
+  saveGuestPrayers, 
+  getGuestQuran, 
+  getLocalTodayDateStr 
+} from '../services/guestStorage';
 import { CircularProgress } from '../components/CircularProgress';
 import { PrayerCard } from '../components/PrayerCard';
 import { PrayerConfirmModal } from '../components/PrayerConfirmModal';
@@ -45,31 +51,6 @@ const ARABIC_PRAYER_NAMES: Record<PrayerName, string> = {
 
 const DEFAULT_PRAYER_NAMES: PrayerName[] = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
 
-// Helper for local guest prayer tracking
-const getTodayDateStr = () => new Date().toISOString().split('T')[0];
-
-const getGuestPrayers = (): TodayPrayersResponse => {
-  const today = getTodayDateStr();
-  try {
-    const stored = localStorage.getItem(`majlis_guest_prayers_${today}`);
-    if (stored) return JSON.parse(stored);
-  } catch (e) {}
-  return {
-    date: today,
-    prayers: DEFAULT_PRAYER_NAMES.map(name => ({ name, status: 'pending' as PrayerStatus })),
-    completedCount: 0,
-    totalPrayers: 5,
-    completionPercentage: 0
-  };
-};
-
-const saveGuestPrayers = (data: TodayPrayersResponse) => {
-  const today = getTodayDateStr();
-  try {
-    localStorage.setItem(`majlis_guest_prayers_${today}`, JSON.stringify(data));
-  } catch (e) {}
-};
-
 export const DashboardPage: React.FC<{ onOpenTasbih?: () => void; onOpenQibla?: () => void }> = ({
   onOpenTasbih,
   onOpenQibla
@@ -77,8 +58,8 @@ export const DashboardPage: React.FC<{ onOpenTasbih?: () => void; onOpenQibla?: 
   const { user, settings, streak, refreshMe, isAuthenticated, updateUserSettings } = useAuth();
   const { showToast } = useToast();
 
-  const [prayerData, setPrayerData] = useState<TodayPrayersResponse | null>(getGuestPrayers());
-  const [quranData, setQuranData] = useState<QuranResponse | null>(null);
+  const [prayerData, setPrayerData] = useState<TodayPrayersResponse | null>(() => getGuestPrayers());
+  const [quranData, setQuranData] = useState<QuranResponse | null>(() => getGuestQuran());
   const [calculatedTimes, setCalculatedTimes] = useState<CalculatedPrayerTimes | null>(null);
   const [countdownStr, setCountdownStr] = useState<string>('');
   const [isDetectingGps, setIsDetectingGps] = useState<boolean>(false);
@@ -202,6 +183,7 @@ export const DashboardPage: React.FC<{ onOpenTasbih?: () => void; onOpenQibla?: 
         if (qRes) setQuranData(qRes);
       } else {
         setPrayerData(getGuestPrayers());
+        setQuranData(getGuestQuran());
       }
 
       const lat = settings?.latitude || activeLocation.lat;
@@ -274,7 +256,7 @@ export const DashboardPage: React.FC<{ onOpenTasbih?: () => void; onOpenQibla?: 
     const completedAllToday = completedCount === 5;
 
     const newPrayerData: TodayPrayersResponse = {
-      date: prayerData?.date || getTodayDateStr(),
+      date: prayerData?.date || getLocalTodayDateStr(),
       prayers: updatedPrayers,
       completedCount,
       totalPrayers: 5,
@@ -332,7 +314,7 @@ export const DashboardPage: React.FC<{ onOpenTasbih?: () => void; onOpenQibla?: 
     const completedAllToday = completedCount === 5;
 
     const newPrayerData: TodayPrayersResponse = {
-      date: prayerData?.date || getTodayDateStr(),
+      date: prayerData?.date || getLocalTodayDateStr(),
       prayers: updatedPrayers,
       completedCount,
       totalPrayers: 5,
