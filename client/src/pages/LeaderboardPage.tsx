@@ -5,8 +5,8 @@ import { LeaderboardItem, LeaderboardUserDetail } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { UserProfileModal } from '../components/UserProfileModal';
 
-export const LeaderboardPage: React.FC = () => {
-  const { user } = useAuth();
+export const LeaderboardPage: React.FC<{ onOpenAuth?: () => void }> = ({ onOpenAuth }) => {
+  const { user, isAuthenticated } = useAuth();
   const [timeframe, setTimeframe] = useState<'today' | 'this_week' | 'this_month' | 'all_time'>('today');
   const [leaderboard, setLeaderboard] = useState<LeaderboardItem[]>([]);
   const [userRank, setUserRank] = useState<LeaderboardItem | null>(null);
@@ -18,6 +18,7 @@ export const LeaderboardPage: React.FC = () => {
   const [isDetailLoading, setIsDetailLoading] = useState<boolean>(false);
 
   useEffect(() => {
+    if (!isAuthenticated) return;
     setIsLoading(true);
     api.getLeaderboard(timeframe)
       .then((res) => {
@@ -26,7 +27,7 @@ export const LeaderboardPage: React.FC = () => {
       })
       .catch(console.error)
       .finally(() => setIsLoading(false));
-  }, [timeframe]);
+  }, [timeframe, isAuthenticated]);
 
   const handleOpenUserDetail = async (userId: number) => {
     setSelectedUserId(userId);
@@ -56,6 +57,69 @@ export const LeaderboardPage: React.FC = () => {
       </span>
     );
   };
+
+  // If user is not logged in, show Locked Screen
+  if (!isAuthenticated) {
+    return (
+      <div className="max-w-3xl mx-auto py-8 sm:py-12 animate-in fade-in duration-300">
+        <div className="relative rounded-3xl bg-slate-900/90 border border-amber-500/30 p-6 sm:p-10 text-center overflow-hidden shadow-2xl shadow-amber-950/20 backdrop-blur-xl">
+          {/* Ambient Glow */}
+          <div className="absolute -top-24 -right-24 w-60 h-60 bg-amber-500/15 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-24 -left-24 w-60 h-60 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
+
+          {/* Golden Trophy & Lock Badge */}
+          <div className="relative mx-auto w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-gradient-to-tr from-amber-600/30 to-amber-400/20 border border-amber-500/40 flex items-center justify-center mb-6 shadow-xl">
+            <Trophy className="w-10 h-10 sm:w-12 sm:h-12 text-amber-300 animate-bounce-subtle" />
+            <div className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-slate-950 border border-amber-500/50 flex items-center justify-center text-amber-400 shadow-md">
+              <Lock className="w-4 h-4" />
+            </div>
+          </div>
+
+          {/* Title & Description */}
+          <span className="text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 inline-block mb-3">
+            Sign In Required
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mb-3">
+            Global Prayer Leaderboard is Locked
+          </h2>
+          <p className="text-sm sm:text-base text-slate-300 max-w-lg mx-auto leading-relaxed mb-8">
+            Sign in with Google or your Email to join the global Muslim Ummah ranking, compare consistency streaks, and inspire others in virtuous deeds.
+          </p>
+
+          {/* Value Highlights */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8 text-left max-w-xl mx-auto">
+            <div className="p-3.5 rounded-2xl bg-slate-950/60 border border-slate-800">
+              <span className="text-lg mb-1 block">🏆</span>
+              <h4 className="text-xs font-bold text-white mb-0.5">Top Rankings</h4>
+              <p className="text-[11px] text-slate-400">Daily, weekly, and all-time top worshippers</p>
+            </div>
+            <div className="p-3.5 rounded-2xl bg-slate-950/60 border border-slate-800">
+              <span className="text-lg mb-1 block">🔥</span>
+              <h4 className="text-xs font-bold text-white mb-0.5">Streak Badges</h4>
+              <p className="text-[11px] text-slate-400">Track 7d, 30d, and 100d prayer consistency</p>
+            </div>
+            <div className="p-3.5 rounded-2xl bg-slate-950/60 border border-slate-800">
+              <span className="text-lg mb-1 block">🤝</span>
+              <h4 className="text-xs font-bold text-white mb-0.5">Privacy First</h4>
+              <p className="text-[11px] text-slate-400">Opt in or out of public display anytime in settings</p>
+            </div>
+          </div>
+
+          {/* Action Button */}
+          {onOpenAuth && (
+            <button
+              type="button"
+              onClick={onOpenAuth}
+              className="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-sm transition-all transform hover:scale-105 active:scale-95 shadow-lg shadow-amber-500/25 inline-flex items-center space-x-2"
+            >
+              <Lock className="w-4 h-4" />
+              <span>Sign In to Unlock Leaderboard</span>
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">

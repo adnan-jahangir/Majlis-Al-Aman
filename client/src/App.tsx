@@ -130,8 +130,22 @@ const MainApp: React.FC = () => {
           )}
           {activeTab === 'calendar' && <CalendarPage />}
           {activeTab === 'statistics' && <StatisticsPage />}
-          {activeTab === 'leaderboard' && <LeaderboardPage />}
-          {activeTab === 'community' && <CommunityPage />}
+          {activeTab === 'leaderboard' && (
+            <LeaderboardPage
+              onOpenAuth={() => {
+                setAuthModalInitialMode('login');
+                setIsAuthModalOpen(true);
+              }}
+            />
+          )}
+          {activeTab === 'community' && (
+            <CommunityPage
+              onOpenAuth={() => {
+                setAuthModalInitialMode('login');
+                setIsAuthModalOpen(true);
+              }}
+            />
+          )}
           {activeTab === 'profile' && <ProfilePage />}
           {activeTab === 'settings' && <SettingsPage onOpenInstall={() => setIsInstallModalOpen(true)} />}
           {activeTab === 'admin' && <AdminPage />}

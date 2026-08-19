@@ -8,7 +8,8 @@ import {
   Heart,
   RefreshCw,
   Clock,
-  Smile
+  Smile,
+  Lock
 } from 'lucide-react';
 import { api } from '../services/api';
 import { CommunityPost } from '../types';
@@ -37,7 +38,7 @@ const formatRelativeTime = (dateString: string): string => {
   }
 };
 
-export const CommunityPage: React.FC = () => {
+export const CommunityPage: React.FC<{ onOpenAuth?: () => void }> = ({ onOpenAuth }) => {
   const { user, isAuthenticated } = useAuth();
   const { showToast } = useToast();
 
@@ -53,6 +54,7 @@ export const CommunityPage: React.FC = () => {
   const isMountedRef = useRef(true);
 
   const loadFeed = useCallback(async (isSilent = false) => {
+    if (!isAuthenticated) return;
     if (!isSilent) setIsRefreshing(true);
     try {
       const res = await api.getCommunityFeed();
@@ -67,9 +69,10 @@ export const CommunityPage: React.FC = () => {
         setIsRefreshing(false);
       }
     }
-  }, []);
+  }, [isAuthenticated]);
 
   useEffect(() => {
+    if (!isAuthenticated) return;
     isMountedRef.current = true;
     loadFeed();
 
@@ -82,7 +85,70 @@ export const CommunityPage: React.FC = () => {
       isMountedRef.current = false;
       clearInterval(interval);
     };
-  }, [loadFeed]);
+  }, [loadFeed, isAuthenticated]);
+
+  // If user is not logged in, show Locked Screen
+  if (!isAuthenticated) {
+    return (
+      <div className="max-w-3xl mx-auto py-8 sm:py-12 animate-in fade-in duration-300">
+        <div className="relative rounded-3xl bg-slate-900/90 border border-emerald-500/30 p-6 sm:p-10 text-center overflow-hidden shadow-2xl shadow-emerald-950/20 backdrop-blur-xl">
+          {/* Ambient Glow */}
+          <div className="absolute -top-24 -right-24 w-60 h-60 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-24 -left-24 w-60 h-60 bg-teal-500/15 rounded-full blur-3xl pointer-events-none" />
+
+          {/* Community Icon & Lock Badge */}
+          <div className="relative mx-auto w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-gradient-to-tr from-emerald-600/30 to-teal-400/20 border border-emerald-500/40 flex items-center justify-center mb-6 shadow-xl">
+            <Users className="w-10 h-10 sm:w-12 sm:h-12 text-emerald-300 animate-pulse" />
+            <div className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-slate-950 border border-emerald-500/50 flex items-center justify-center text-emerald-400 shadow-md">
+              <Lock className="w-4 h-4" />
+            </div>
+          </div>
+
+          {/* Title & Description */}
+          <span className="text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 inline-block mb-3">
+            Sign In Required
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mb-3">
+            Ummah Community & Chat is Locked
+          </h2>
+          <p className="text-sm sm:text-base text-slate-300 max-w-lg mx-auto leading-relaxed mb-8">
+            Sign in to share reflections, read Islamic quotes, send prayers/duas to fellow believers, and interact with the global community.
+          </p>
+
+          {/* Value Highlights */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8 text-left max-w-xl mx-auto">
+            <div className="p-3.5 rounded-2xl bg-slate-950/60 border border-slate-800">
+              <span className="text-lg mb-1 block">💬</span>
+              <h4 className="text-xs font-bold text-white mb-0.5">Live Reflections</h4>
+              <p className="text-[11px] text-slate-400">Share Quranic realizations and daily spiritual thoughts</p>
+            </div>
+            <div className="p-3.5 rounded-2xl bg-slate-950/60 border border-slate-800">
+              <span className="text-lg mb-1 block">🤲</span>
+              <h4 className="text-xs font-bold text-white mb-0.5">Dua Requests</h4>
+              <p className="text-[11px] text-slate-400">Ask for sincere prayers and send Duas with 1-tap</p>
+            </div>
+            <div className="p-3.5 rounded-2xl bg-slate-950/60 border border-slate-800">
+              <span className="text-lg mb-1 block">🛡️</span>
+              <h4 className="text-xs font-bold text-white mb-0.5">Safe & Respectful</h4>
+              <p className="text-[11px] text-slate-400">Strictly moderated peaceful space dedicated to worship</p>
+            </div>
+          </div>
+
+          {/* Action Button */}
+          {onOpenAuth && (
+            <button
+              type="button"
+              onClick={onOpenAuth}
+              className="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-sm transition-all transform hover:scale-105 active:scale-95 shadow-lg shadow-emerald-500/25 inline-flex items-center space-x-2"
+            >
+              <Lock className="w-4 h-4" />
+              <span>Sign In to Join Community</span>
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
