@@ -61,34 +61,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     },
     onError: (errResponse) => {
       console.warn('Google login failed or closed:', errResponse);
-      // Fallback: If client ID not yet configured in Google Console, offer quick Google account connection
-      handleQuickGoogleFallback();
+      setError('Google Sign-In was cancelled or failed. Please try email/password.');
     }
   });
 
-  const handleQuickGoogleFallback = async () => {
-    setIsGoogleLoading(true);
-    try {
-      await loginWithGoogle({
-        email: 'adnan.islamic.dev@gmail.com',
-        name: 'Adnan Tariq (Google)',
-        avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'
-      });
-      onClose();
-    } catch (err: any) {
-      setError(err.message || 'Google authentication failed');
-    } finally {
-      setIsGoogleLoading(false);
-    }
-  };
-
   const handleGoogleClick = () => {
     setError(null);
-    try {
-      triggerGoogleOAuth();
-    } catch (e) {
-      handleQuickGoogleFallback();
-    }
+    triggerGoogleOAuth();
   };
 
   if (!isOpen) return null;

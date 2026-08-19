@@ -65,14 +65,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const loginWithGoogle = async (googleData?: { email?: string; name?: string; avatar?: string; googleId?: string }) => {
-    // Default fallback demo Google credentials if none provided
-    const payload = {
-      email: googleData?.email || 'adnan.islamic.dev@gmail.com',
-      name: googleData?.name || 'Adnan Tariq (Google)',
-      avatar: googleData?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150',
-      googleId: googleData?.googleId || `g_${Date.now()}`
-    };
-    const res = await api.googleAuth(payload);
+    if (!googleData?.email) {
+      throw new Error('Google authentication data is required.');
+    }
+    const res = await api.googleAuth(googleData);
     setAuthToken(res.token);
     await refreshMe();
   };

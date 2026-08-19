@@ -1,8 +1,6 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
-import { User, UserSettings, Streak, Announcement } from './models/index.js';
-
-export const TARGET_USER_ID = '6a81ca9256464fc5bf9cbd87';
+import { User, UserSettings, Streak } from './models/index.js';
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/majlis_al_aman';
 
@@ -23,13 +21,12 @@ export const seedMongoUser = async () => {
   try {
     if (mongoose.connection.readyState < 1) return;
 
-    const existingUser = await User.findById(TARGET_USER_ID);
+    const existingUser = await User.findOne({ email: 'adnan@majlis.app' });
     if (!existingUser) {
       const salt = await bcrypt.genSalt(10);
       const passwordHash = await bcrypt.hash('password123', salt);
 
       const newUser = new User({
-        _id: new mongoose.Types.ObjectId(TARGET_USER_ID),
         name: 'Adnan Tariq',
         username: 'adnan',
         email: 'adnan@majlis.app',
@@ -58,7 +55,7 @@ export const seedMongoUser = async () => {
         { upsert: true, new: true }
       );
 
-      console.log(`✓ Seeded primary MongoDB user with ID: ${TARGET_USER_ID}`);
+      console.log(`✓ Seeded primary MongoDB user: ${newUser.email} (${newUser._id})`);
     }
   } catch (err) {
     console.error('Mongo seed error:', err.message);

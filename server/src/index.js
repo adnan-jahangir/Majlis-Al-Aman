@@ -58,7 +58,6 @@ app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'ok', 
     name: 'Majlis Al-Aman API', 
-    mongo_user_id: '6a81ca9256464fc5bf9cbd87',
     timestamp: new Date().toISOString() 
   });
 });
@@ -78,7 +77,6 @@ Promise.all([seedDatabase(), connectMongo()])
     startReminderScheduler();
     app.listen(PORT, '0.0.0.0', () => {
       console.log(`✨ Majlis Al-Aman Server running on http://0.0.0.0:${PORT}`);
-      console.log(`📌 Primary MongoDB ID Configured: 6a81ca9256464fc5bf9cbd87`);
     });
   })
   .catch(err => {
