@@ -26,7 +26,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenTasbih,
   onOpenQibla
 }) => {
-  const { user, isAuthenticated, streak, demoLogin, logout } = useAuth();
+  const { user, isAuthenticated, streak, logout } = useAuth();
   const [isMuted, setIsMuted] = useState<boolean>(true);
   const [showUserMenu, setShowUserMenu] = useState<boolean>(false);
 
@@ -189,13 +189,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           ) : (
             <div className="flex items-center space-x-2">
-              <button
-                type="button"
-                onClick={() => demoLogin('user')}
-                className="hidden md:inline-flex px-3 py-1.5 text-xs font-medium text-emerald-300 hover:text-emerald-200 bg-emerald-500/10 hover:bg-emerald-500/20 rounded-xl border border-emerald-500/30 transition-colors"
-              >
-                ⚡ Demo User
-              </button>
               <button
                 type="button"
                 onClick={onOpenAuth}

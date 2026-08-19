@@ -19,7 +19,7 @@ import { SettingsPage } from './pages/SettingsPage';
 import { AdminPage } from './pages/AdminPage';
 
 const MainApp: React.FC = () => {
-  const { user, isAuthenticated, isLoading, settings, demoLogin, refreshMe } = useAuth();
+  const { user, isAuthenticated, isLoading, settings, refreshMe } = useAuth();
   const { showToast } = useToast();
 
   const [activeTab, setActiveTab] = useState<string>('dashboard');
@@ -64,11 +64,9 @@ const MainApp: React.FC = () => {
             setAuthModalInitialMode('login');
             setIsAuthModalOpen(true);
           }}
-          onExploreDemo={async () => {
-            await demoLogin('user');
+          onExploreDemo={() => {
             setViewingLanding(false);
             setActiveTab('dashboard');
-            showToast({ message: 'Welcome! Logged in as Adnan with preloaded history.', type: 'success' });
           }}
         />
         <AuthModal

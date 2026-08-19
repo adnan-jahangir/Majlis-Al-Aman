@@ -15,7 +15,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   onClose,
   initialMode = 'login'
 }) => {
-  const { login, loginWithGoogle, demoLogin } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const [mode, setMode] = useState<'login' | 'forgot'>(initialMode === 'forgot' ? 'forgot' : 'login');
   
   // Form fields
@@ -87,19 +87,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       }
     } catch (err: any) {
       setError(err.message || 'Authentication failed. Please check your credentials.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleDemo = async (role: 'user' | 'admin') => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      await demoLogin(role);
-      onClose();
-    } catch (err: any) {
-      setError(err.message || 'Demo login failed');
     } finally {
       setIsLoading(false);
     }

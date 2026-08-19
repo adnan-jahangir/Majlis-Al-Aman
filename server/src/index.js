@@ -12,7 +12,7 @@ import settingsRoutes from './routes/settings.js';
 import adminRoutes from './routes/admin.js';
 import prayerTimesRoutes from './routes/prayerTimes.js';
 import { seedDatabase } from './seed.js';
-import { connectMongo, seedMongoUser } from './mongo.js';
+import { connectMongo } from './mongo.js';
 
 dotenv.config();
 
@@ -73,7 +73,6 @@ import { startReminderScheduler } from './services/reminderScheduler.js';
 // Initialize database and start server
 Promise.all([seedDatabase(), connectMongo()])
   .then(async () => {
-    await seedMongoUser();
     startReminderScheduler();
     app.listen(PORT, '0.0.0.0', () => {
       console.log(`✨ Majlis Al-Aman Server running on http://0.0.0.0:${PORT}`);

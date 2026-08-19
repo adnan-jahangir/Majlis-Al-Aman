@@ -12,7 +12,6 @@ interface AuthContextType {
   login: (credentials: { login: string; password: string }) => Promise<void>;
   loginWithGoogle: (googleData?: { email?: string; name?: string; avatar?: string; googleId?: string }) => Promise<void>;
   register: (data: any) => Promise<void>;
-  demoLogin: (role?: 'user' | 'admin') => Promise<void>;
   logout: () => void;
   updateUser: (updatedUser: Partial<User>) => void;
   updateUserSettings: (newSettings: Partial<UserSettings>) => Promise<void>;
@@ -80,13 +79,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     await refreshMe();
   };
 
-  const demoLogin = async (role: 'user' | 'admin' = 'user') => {
-    const loginCreds = role === 'admin' 
-      ? { login: 'admin@majlis.app', password: 'admin123' }
-      : { login: 'adnan@majlis.app', password: 'password123' };
-    await login(loginCreds);
-  };
-
   const logout = () => {
     setAuthToken(null);
     setUser(null);
@@ -118,7 +110,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         login,
         loginWithGoogle,
         register,
-        demoLogin,
         logout,
         updateUser,
         updateUserSettings,
