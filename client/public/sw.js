@@ -1,17 +1,6 @@
-const CACHE_NAME = 'majlis-cache-v1';
-const ASSETS_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/favicon.svg'
-];
+const CACHE_NAME = 'majlis-cache-v2';
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
-    })
-  );
   self.skipWaiting();
 });
 
@@ -31,23 +20,34 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  // Only handle GET requests
   if (event.request.method !== 'GET') return;
-  // Handle API requests via network first
-  if (event.request.url.includes('/api/')) {
-    event.respondWith(
-      fetch(event.request).catch(() => caches.match(event.request))
-    );
+
+  const url = new URL(event.request.url);
+
+  // Do not intercept or cache development Vite HMR requests, chrome-extensions or API calls
+  if (
+    url.hostname === 'localhost' || 
+    url.hostname === '127.0.0.1' ||
+    url.pathname.includes('/@') ||
+    url.pathname.includes('/api/') ||
+    url.protocol.startsWith('chrome-extension')
+  ) {
     return;
   }
-  // Cache first with network fallback for assets
+
+  // Network first with cache fallback
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      return cachedResponse || fetch(event.request).then((networkResponse) => {
-        return caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, networkResponse.clone());
-          return networkResponse;
-        });
-      });
-    }).catch(() => caches.match('/'))
+    fetch(event.request)
+      .then((response) => {
+        if (response && response.status === 200 && response.type === 'basic') {
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+        }
+        return response;
+      })
+      .catch(() => caches.match(event.request))
   );
 });
