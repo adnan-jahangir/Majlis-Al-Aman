@@ -54,7 +54,7 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     <ToastContext.Provider value={{ showToast, removeToast }}>
       {children}
       {/* Toast Notification Container */}
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col space-y-3 pointer-events-none max-w-sm w-full px-4">
+      <div className="fixed top-5 right-4 sm:right-6 z-50 flex flex-col space-y-3 pointer-events-none max-w-sm w-full">
         {toasts.map(toast => {
           const isSuccess = toast.type === 'success';
           const isError = toast.type === 'error';
