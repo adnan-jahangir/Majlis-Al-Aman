@@ -8,7 +8,7 @@ import {
   User as UserIcon,
   Flame,
   Settings,
-  Download
+  Sun
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -17,7 +17,7 @@ interface NavbarProps {
   setActiveTab: (tab: string) => void;
   onOpenTasbih: () => void;
   onOpenQibla: () => void;
-  onOpenInstall?: () => void;
+  onOpenAdhkar?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -25,7 +25,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   setActiveTab,
   onOpenTasbih,
   onOpenQibla,
-  onOpenInstall
+  onOpenAdhkar
 }) => {
   const { user, isAuthenticated, streak, logout } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState<boolean>(false);
@@ -95,16 +95,16 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span className="hidden sm:inline">Qibla</span>
           </button>
 
-          {/* Install App Quick Button */}
-          {onOpenInstall && (
+          {/* Daily Adhkar Trigger */}
+          {onOpenAdhkar && (
             <button
               type="button"
-              onClick={onOpenInstall}
-              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 text-xs font-bold transition-all shadow-sm"
-              title="Install Official App on Device"
+              onClick={onOpenAdhkar}
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/35 text-amber-300 text-xs font-bold transition-all shadow-sm"
+              title="Daily Morning & Evening Adhkar"
             >
-              <Download className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="hidden md:inline">Install App</span>
+              <Sun className="w-4 h-4 text-amber-400" />
+              <span>Adhkar</span>
             </button>
           )}
 

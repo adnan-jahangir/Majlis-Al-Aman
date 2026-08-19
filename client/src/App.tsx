@@ -8,6 +8,7 @@ import { QuranModal } from './components/QuranModal';
 import { TasbihModal } from './components/TasbihModal';
 import { QiblaModal } from './components/QiblaModal';
 import { InstallAppModal } from './components/InstallAppModal';
+import { AdhkarModal } from './components/AdhkarModal';
 import { AuthModal } from './pages/AuthModal';
 import { LandingPage } from './pages/LandingPage';
 import { DashboardPage } from './pages/DashboardPage';
@@ -29,6 +30,7 @@ const MainApp: React.FC = () => {
   const [isQuranModalOpen, setIsQuranModalOpen] = useState<boolean>(false);
   const [isTasbihOpen, setIsTasbihOpen] = useState<boolean>(false);
   const [isQiblaOpen, setIsQiblaOpen] = useState<boolean>(false);
+  const [isAdhkarOpen, setIsAdhkarOpen] = useState<boolean>(false);
   const [isInstallModalOpen, setIsInstallModalOpen] = useState<boolean>(false);
   const [viewingLanding, setViewingLanding] = useState<boolean>(false);
 
@@ -60,7 +62,7 @@ const MainApp: React.FC = () => {
           }}
           onOpenTasbih={() => setIsTasbihOpen(true)}
           onOpenQibla={() => setIsQiblaOpen(true)}
-          onOpenInstall={() => setIsInstallModalOpen(true)}
+          onOpenAdhkar={() => setIsAdhkarOpen(true)}
         />
         <LandingPage
           onGetStarted={() => {
@@ -84,6 +86,7 @@ const MainApp: React.FC = () => {
           city={settings?.location_city}
           country={settings?.location_country}
         />
+        <AdhkarModal isOpen={isAdhkarOpen} onClose={() => setIsAdhkarOpen(false)} />
         <InstallAppModal
           isOpenManual={isInstallModalOpen}
           onCloseManual={() => setIsInstallModalOpen(false)}
@@ -104,7 +107,7 @@ const MainApp: React.FC = () => {
         setActiveTab={setActiveTab}
         onOpenTasbih={() => setIsTasbihOpen(true)}
         onOpenQibla={() => setIsQiblaOpen(true)}
-        onOpenInstall={() => setIsInstallModalOpen(true)}
+        onOpenAdhkar={() => setIsAdhkarOpen(true)}
       />
 
       {/* Main Layout: Sidebar + Main Content Container */}
@@ -122,6 +125,7 @@ const MainApp: React.FC = () => {
             <DashboardPage
               onOpenTasbih={() => setIsTasbihOpen(true)}
               onOpenQibla={() => setIsQiblaOpen(true)}
+              onOpenAdhkar={() => setIsAdhkarOpen(true)}
             />
           )}
           {activeTab === 'calendar' && <CalendarPage />}
@@ -166,6 +170,8 @@ const MainApp: React.FC = () => {
         city={settings?.location_city}
         country={settings?.location_country}
       />
+
+      <AdhkarModal isOpen={isAdhkarOpen} onClose={() => setIsAdhkarOpen(false)} />
 
       {/* Automatic & Manual App Install Modal */}
       <InstallAppModal

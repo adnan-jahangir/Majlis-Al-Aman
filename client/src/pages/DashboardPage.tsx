@@ -15,7 +15,8 @@ import {
   ChevronLeft,
   Copy,
   Shuffle,
-  BookMarked
+  BookMarked,
+  Sun
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useAuth } from '../context/AuthContext';
@@ -51,9 +52,14 @@ const ARABIC_PRAYER_NAMES: Record<PrayerName, string> = {
 
 const DEFAULT_PRAYER_NAMES: PrayerName[] = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
 
-export const DashboardPage: React.FC<{ onOpenTasbih?: () => void; onOpenQibla?: () => void }> = ({
+export const DashboardPage: React.FC<{ 
+  onOpenTasbih?: () => void; 
+  onOpenQibla?: () => void;
+  onOpenAdhkar?: () => void;
+}> = ({
   onOpenTasbih,
-  onOpenQibla
+  onOpenQibla,
+  onOpenAdhkar
 }) => {
   const { user, settings, streak, refreshMe, isAuthenticated, updateUserSettings } = useAuth();
   const { showToast } = useToast();
@@ -427,6 +433,17 @@ export const DashboardPage: React.FC<{ onOpenTasbih?: () => void; onOpenQibla?: 
                 <MapPin className={`w-3.5 h-3.5 ${isDetectingGps ? 'animate-spin' : 'text-emerald-400'}`} />
                 <span>{isDetectingGps ? 'Locating...' : `GPS: ${activeLocation.city}`}</span>
               </button>
+
+              {onOpenAdhkar && (
+                <button
+                  type="button"
+                  onClick={onOpenAdhkar}
+                  className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 text-xs font-bold transition-all shadow-sm"
+                >
+                  <Sun className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Daily Adhkar</span>
+                </button>
+              )}
 
               <button
                 type="button"
