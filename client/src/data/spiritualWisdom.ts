@@ -14,80 +14,80 @@ export const SPIRITUAL_COLLECTION: SpiritualWisdom[] = [
     type: 'ayah',
     category: 'Tranquility',
     arabic: 'أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ',
-    english: '“Unquestionably, by the remembrance of Allah hearts find rest.”',
-    reference: 'Surah Ar-Ra\'d (13:28)'
+    english: '“জেনে রাখো, কেবল আল্লাহর স্মরণের মাধ্যমেই অন্তরসমূহ প্রশান্ত হয়।”',
+    reference: 'সূরা আর-রাদ (১৩:২৮)'
   },
   {
     id: 2,
     type: 'ayah',
     category: 'Salah & Prayer',
     arabic: 'إِنَّ الصَّلَاةَ كَانَتْ عَلَى الْمُؤْمِنِينَ كِتَابًا مَوْقُوتًا',
-    english: '“Indeed, prayer has been decreed upon the believers at specified times.”',
-    reference: 'Surah An-Nisa (4:103)'
+    english: '“নিশ্চয়ই মুমিনদের ওপর নির্দিষ্ট সময়ে সালাত আদায় করা ফরজ করা হয়েছে।”',
+    reference: 'সূরা আন-নিসা (৪:১০৩)'
   },
   {
     id: 3,
     type: 'hadith',
     category: 'Steadfastness',
     arabic: 'أَحَبُّ الأَعْمَالِ إِلَى اللَّهِ أَدْوَمُهَا وَإِنْ قَلَّ',
-    english: '“The deeds most loved by Allah are those done regularly, even if they are small.”',
-    reference: 'Sahih al-Bukhari (6464), Sahih Muslim (782)'
+    english: '“আল্লাহর নিকট সবচেয়ে প্রিয় আমল হলো যা নিয়মিত করা হয়, যদিও তা পরিমাণে কম হয়।”',
+    reference: 'সহীহ আল-বুখারী (৬৪৬৪), সহীহ মুসলিম (৭৮২)'
   },
   {
     id: 4,
     type: 'ayah',
     category: 'Patience',
     arabic: 'وَاسْتَعِينُوا بِالصَّبْرِ وَالصَّلَاةِ ۚ وَإِنَّهَا لَكَبِيرَةٌ إِلَّا عَلَى الْخَاشِعِينَ',
-    english: '“And seek help through patience and prayer, and indeed, it is difficult except for the humbly submissive.”',
-    reference: 'Surah Al-Baqarah (2:45)'
+    english: '“আর তোমরা ধৈর্য ও সালাতের মাধ্যমে সাহায্য প্রার্থনা করো, নিশ্চয়ই তা বিনয়ী ব্যতীত অন্যদের কাছে কঠিন।”',
+    reference: 'সূরা আল-বাক্বারাহ (২:৪৫)'
   },
   {
     id: 5,
     type: 'hadith',
     category: 'Salah & Prayer',
     arabic: 'مَنْ صَلَّى الْبَرْدَيْنِ دَخَلَ الْجَنَّةَ',
-    english: '“Whoever performs the two cool prayers (Fajr and Asr) will enter Paradise.”',
-    reference: 'Sahih al-Bukhari (574)'
+    english: '“যে ব্যক্তি দুই শীতল সময়ের সালাত (ফজর ও আসর) নিয়মিত আদায় করবে, সে জান্নাতে প্রবেশ করবে।”',
+    reference: 'সহীহ আল-বুখারী (৫৭৪)'
   },
   {
     id: 6,
     type: 'ayah',
     category: 'Gratitude',
     arabic: 'فَاذْكُرُونِي أَذْكُرْكُمْ وَاشْكُرُوا لِي وَلَا تَكْفُرُونِ',
-    english: '“So remember Me; I will remember you. And be grateful to Me and do not deny Me.”',
-    reference: 'Surah Al-Baqarah (2:152)'
+    english: '“অতএব তোমরা আমাকে স্মরণ করো, আমিও তোমাদের স্মরণ রাখব। আর আমার প্রতি কৃতজ্ঞতা প্রকাশ করো, অকৃতজ্ঞ হয়ো না।”',
+    reference: 'সূরা আল-বাক্বারাহ (২:১৫২)'
   },
   {
     id: 7,
     type: 'hadith',
     category: 'Quran',
     arabic: 'اقْرَءُوا الْقُرْآنَ فَإِنَّهُ يَأْتِي يَوْمَ الْقِيَامَةِ شَفِيعًا لِأَصْحَابِهِ',
-    english: '“Read the Quran, for it will come on the Day of Resurrection as an intercessor for its companions.”',
-    reference: 'Sahih Muslim (804)'
+    english: '“তোমরা কুরআন তিলাওয়াত করো, কেননা কিয়ামতের দিন এটি তার তিলাওয়াতকারীর জন্য সুপারিশকারী হিসেবে উপস্থিত হবে।”',
+    reference: 'সহীহ মুসলিম (৮০৪)'
   },
   {
     id: 8,
     type: 'ayah',
     category: 'Forgiveness',
     arabic: 'وَتُوبُوا إِلَى اللَّهِ جَمِيعًا أَيُّهَ الْمُؤْمِنُونَ لَعَلَّكُمْ تُفْلِحُونَ',
-    english: '“And turn to Allah in repentance, all of you, O believers, that you might succeed.”',
-    reference: 'Surah An-Nur (24:31)'
+    english: '“হে মুমিনগণ, তোমরা সকলে আল্লাহর নিকট তওবা করো, যাতে তোমরা সফলকাম হতে পারো।”',
+    reference: 'সূরা আন-নূর (২৪:৩১)'
   },
   {
     id: 9,
     type: 'hadith',
     category: 'Salah & Prayer',
     arabic: 'رَكْعَتَا الْفَجْرِ خَيْرٌ مِنَ الدُّنْيَا وَمَا فِيهَا',
-    english: '“The two Sunnah Rakats of Fajr are better than the entire world and everything within it.”',
-    reference: 'Sahih Muslim (725)'
+    english: '“ফজরের দুই রাকাত (সুন্নত) সালাত সমগ্র পৃথিবী এবং এর মধ্যে যা কিছু আছে তার চেয়েও উত্তম।”',
+    reference: 'সহীহ মুসলিম (৭২৫)'
   },
   {
     id: 10,
     type: 'ayah',
     category: 'Steadfastness',
     arabic: 'إِنَّ الَّذِينَ قَالُوا رَبُّنَا اللَّهُ ثُمَّ اسْتَقَامُوا فَلَا خَوْفٌ عَلَيْهِمْ وَلَا هُمْ يَحْزَنُونَ',
-    english: '“Indeed, those who have said, Our Lord is Allah, and then remained steadfast — there will be no fear concerning them, nor will they grieve.”',
-    reference: 'Surah Al-Ahqaf (46:13)'
+    english: '“নিশ্চয়ই যারা বলে ‘আমাদের পালনকর্তা আল্লাহ’ এবং অতঃপর অবিচল থাকে, তাদের কোনো ভয় নেই এবং তারা চিন্তিতও হবে না।”',
+    reference: 'সূরা আল-আহক্বাফ (৪৬:১৩)'
   },
 
   // 11-20: TAWAKKUL, FORGIVENESS & PATIENCE
@@ -96,80 +96,80 @@ export const SPIRITUAL_COLLECTION: SpiritualWisdom[] = [
     type: 'hadith',
     category: 'Gratitude',
     arabic: 'مَنْ لَمْ يَشْكُرِ النَّاسَ لَمْ يَشْكُرِ اللَّهَ',
-    english: '“He who does not thank people does not thank Allah.”',
-    reference: 'Jami\' at-Tirmidhi (1954)'
+    english: '“যে মানুষের প্রতি কৃতজ্ঞতা প্রকাশ করে না, সে আল্লাহর প্রতিও কৃতজ্ঞ হতে পারে না।”',
+    reference: 'জামে আত-তিরমিযী (১৯৫৪)'
   },
   {
     id: 12,
     type: 'ayah',
     category: 'Tranquility',
     arabic: 'وَإِذَا سَأَلَكَ عِبَادِي عَنِّي فَإِنِّي قَرِيبٌ ۖ أُجِيبُ دَعْوَةَ الدَّاعِ إِذَا دَعَانِ',
-    english: '“And when My servants ask you concerning Me, indeed I am near. I respond to the invocation of the supplicant when he calls upon Me.”',
-    reference: 'Surah Al-Baqarah (2:186)'
+    english: '“আর আমার বান্দারা যখন আপনার কাছে আমার সম্পর্কে জিজ্ঞেস করে, নিশ্চয়ই আমি অতি নিকটে। আহ্বানকারী যখনই আমাকে ডাকে, আমি তার ডাকে সাড়া দিই।”',
+    reference: 'সূরা আল-বাক্বারাহ (২:১৮৬)'
   },
   {
     id: 13,
     type: 'hadith',
     category: 'Patience',
     arabic: 'عَجَبًا لِأَمْرِ الْمُؤْمِنِ إِنَّ أَمْرَهُ كُلَّهُ خَيْرٌ',
-    english: '“How wonderful is the affair of the believer, for his affairs are all good! If something good happens, he is thankful and that is good for him; if something bad happens, he bears it with patience and that is good for him.”',
-    reference: 'Sahih Muslim (2999)'
+    english: '“মুমিনের প্রতিটি বিষয়ই কত চমৎকার! তার সবকিছুতেই কল্যাণ নিহিত; কোনো ভালো কিছু ঘটলে সে শোকর করে আর বিপদ এলে ধৈর্য ধারণ করে।”',
+    reference: 'সহীহ মুসলিম (২৯৯৯)'
   },
   {
     id: 14,
     type: 'ayah',
     category: 'Tawakkul',
     arabic: 'وَمَن يَتَوَكَّلْ عَلَى اللَّهِ فَهُوَ حَسْبُهُ',
-    english: '“And whoever relies upon Allah — then He is sufficient for him.”',
-    reference: 'Surah At-Talaq (65:3)'
+    english: '“যে ব্যক্তি আল্লাহর ওপর পূর্ণ ভরসা রাখে, তার জন্য তিনিই যথেষ্ট।”',
+    reference: 'সূরা আত-ত্বালাক্ব (৬৫:৩)'
   },
   {
     id: 15,
     type: 'hadith',
     category: 'Salah & Prayer',
     arabic: 'الصَّلَوَاتُ الْخَمْسُ وَالْجُمُعَةُ إِلَى الْجُمُعَةِ كَفَّارَاتٌ لِمَا بَيْنَهُنَّ مَا لَمْ تُغْشَ الْكَبَائِرُ',
-    english: '“The five daily prayers and Friday to Friday are expiation for whatever sins occur between them, so long as major sins are avoided.”',
-    reference: 'Sahih Muslim (233)'
+    english: '“পাঁচ ওয়াক্ত সালাত এবং এক জুমা থেকে পরবর্তী জুমা মধ্যবর্তী গুনাহসমূহের কাফফারা স্বরূপ, যতক্ষণ না কবিরা গুনাহে লিপ্ত হওয়া হয়।”',
+    reference: 'সহীহ মুসলিম (২৩৩)'
   },
   {
     id: 16,
     type: 'ayah',
     category: 'Forgiveness',
     arabic: 'قُلْ يَا عِبَادِيَ الَّذِينَ أَسْرَفُوا عَلَىٰ أَنفُسِهِمْ لَا تَقْنَطُوا مِن رَّحْمَةِ اللَّهِ ۚ إِنَّ اللَّهَ يَغْفِرُ الذُّنُوبَ جَمِيعًا',
-    english: '“Say, O My servants who have transgressed against themselves, do not despair of the mercy of Allah. Indeed, Allah forgives all sins.”',
-    reference: 'Surah Az-Zumar (39:53)'
+    english: '“বলুন, হে আমার বান্দাগণ যারা নিজেদের ওপর অবিচার করেছ! তোমরা আল্লাহর রহমত থেকে নিরাশ হয়ো না। নিশ্চয়ই আল্লাহ সমস্ত গুনাহ ক্ষমা করে দেন।”',
+    reference: 'সূরা আয-যুমার (৩৯:৫৩)'
   },
   {
     id: 17,
     type: 'hadith',
     category: 'Quran',
     arabic: 'خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ',
-    english: '“The best among you are those who learn the Quran and teach it to others.”',
-    reference: 'Sahih al-Bukhari (5027)'
+    english: '“তোমাদের মধ্যে সর্বোত্তম ব্যক্তি সে, যে নিজে কুরআন শেখে এবং অন্যকে তা শেখায়।”',
+    reference: 'সহীহ আল-বুখারী (৫০২৭)'
   },
   {
     id: 18,
     type: 'ayah',
     category: 'Patience',
     arabic: 'إِنَّ مَعَ الْعُسْرِ يُسْرًا',
-    english: '“Indeed, with hardship comes ease.”',
-    reference: 'Surah Ash-Sharh (94:6)'
+    english: '“নিশ্চয়ই কষ্টের সাথেই স্বস্তি রয়েছে।”',
+    reference: 'সূরা আল-ইনশিরাহ (৯৪:৬)'
   },
   {
     id: 19,
     type: 'hadith',
     category: 'Tawakkul',
     arabic: 'احْفَظِ اللَّهَ يَحْفَظْكَ، احْفَظِ اللَّهَ تَجِدْهُ تُجَاهَكَ',
-    english: '“Be mindful of Allah and Allah will protect you. Be mindful of Allah and you will find Him in front of you.”',
-    reference: 'Jami\' at-Tirmidhi (2516)'
+    english: '“আল্লাহর হুকুম-আহকাম হিফাজত করো, আল্লাহ তোমাকে হিফাজত করবেন। আল্লাহকে স্মরণ রেখো, সর্বদা তাঁকে তোমার সামনেই পাবে।”',
+    reference: 'জামে আত-তিরমিযী (২৫১৬)'
   },
   {
     id: 20,
     type: 'ayah',
     category: 'Gratitude',
     arabic: 'لَئِن شَكَرْتُمْ لَأَزِيدَنَّكُمْ',
-    english: '“If you are grateful, I will surely increase you [in favor].”',
-    reference: 'Surah Ibrahim (14:7)'
+    english: '“যদি তোমরা কৃতজ্ঞতা প্রকাশ করো, তবে আমি অবশ্যই তোমাদের প্রতি আমার নিয়ামত বাড়িয়ে দেবো।”',
+    reference: 'সূরা ইবরাহীম (১৪:৭)'
   },
 
   // 21-30: PROSTRATION, NIGHT PRAYER & SPIRITUAL NOURISHMENT
@@ -178,80 +178,80 @@ export const SPIRITUAL_COLLECTION: SpiritualWisdom[] = [
     type: 'hadith',
     category: 'Salah & Prayer',
     arabic: 'أَقْرَبُ مَا يَكُونُ الْعَبْدُ مِنْ رَبِّهِ وَهُوَ سَاجِدٌ فَأَكْثِرُوا الدُّعَاءَ',
-    english: '“The closest a servant comes to his Lord is when he is prostrating (in Sujood), so make frequent supplication.”',
-    reference: 'Sahih Muslim (482)'
+    english: '“বান্দা সিজদারত অবস্থায় তার রবের সবচেয়ে বেশি নৈকট্য লাভ করে; সুতরাং তোমরা তখন বেশি বেশি দু\'আ করো।”',
+    reference: 'সহীহ মুসলিম (৪৮২)'
   },
   {
     id: 22,
     type: 'ayah',
     category: 'Salah & Prayer',
     arabic: 'وَأَقِمِ الصَّلَاةَ لِذِكْرِي',
-    english: '“And establish prayer for My remembrance.”',
-    reference: 'Surah Taha (20:14)'
+    english: '“আর আমার স্মরণের উদ্দেশ্যে সালাত কায়েম করো।”',
+    reference: 'সূরা ত্বা-হা (২০:১৪)'
   },
   {
     id: 23,
     type: 'hadith',
     category: 'Steadfastness',
     arabic: 'قُلْ آمَنْتُ بِاللَّهِ ثُمَّ اسْتَقِمْ',
-    english: '“Say: I believe in Allah, and then remain steadfast and firm.”',
-    reference: 'Sahih Muslim (38)'
+    english: '“বলো: ‘আমি আল্লাহর ওপর ঈমান এনেছি’, অতঃপর তার ওপর অবিচল ও দৃঢ়পদ থাকো।”',
+    reference: 'সহীহ মুসলিম (৩৮)'
   },
   {
     id: 24,
     type: 'ayah',
     category: 'Tranquility',
     arabic: 'هُوَ الَّذِي أَنزَلَ السَّكِينَةَ فِي قُلُوبِ الْمُؤْمِنِينَ لِيَزْدَادُوا إِيمَانًا مَّعَ إِيمَانِهِمْ',
-    english: '“It is He who sent down tranquility into the hearts of the believers that they would increase in faith along with their [present] faith.”',
-    reference: 'Surah Al-Fath (48:4)'
+    english: '“তিনিই মুমিনদের অন্তরে প্রশান্তি দান করেন, যেন তাদের ঈমানের সাথে ঈমান আরো বৃদ্ধি পায়।”',
+    reference: 'সূরা আল-ফাতহ (৪৮:৪)'
   },
   {
     id: 25,
     type: 'hadith',
     category: 'Salah & Prayer',
     arabic: 'عَلَيْكُمْ بِقِيَامِ اللَّيْلِ فَإِنَّهُ دَأْبُ الصَّالِحِينَ قَبْلَكُمْ',
-    english: '“Hold fast to the night prayer (Tahajjud), for it was the habit of the righteous before you and a means of drawing near to your Lord.”',
-    reference: 'Jami\' at-Tirmidhi (3549)'
+    english: '“তোমরা রাতের সালাত (তাহাজ্জুদ) আঁকড়ে ধরো, কেননা তা তোমাদের পূর্ববর্তী নেককারদের অভ্যাস এবং আল্লাহর নৈকট্য লাভের মাধ্যম।”',
+    reference: 'জামে আত-তিরমিযী (৩৫৪৯)'
   },
   {
     id: 26,
     type: 'ayah',
     category: 'Patience',
     arabic: 'إِنَّ اللَّهَ مَعَ الصَّابِرِينَ',
-    english: '“Indeed, Allah is with the patient.”',
-    reference: 'Surah Al-Baqarah (2:153)'
+    english: '“নিশ্চয়ই আল্লাহ ধৈর্যশীলদের সাথে আছেন।”',
+    reference: 'সূরা আল-বাক্বারাহ (২:১৫৩)'
   },
   {
     id: 27,
     type: 'hadith',
     category: 'Forgiveness',
     arabic: 'التَّائِبُ مِنَ الذَّنْبِ كَمَنْ لَا ذَنْبَ لَهُ',
-    english: '“The one who repents from sin is like one who has no sin at all.”',
-    reference: 'Sunan Ibn Majah (4250)'
+    english: '“পাপ থেকে খাঁটিভাবে তওবাকারী ব্যক্তি এমন, যেন তার কোনো পাপই নেই।”',
+    reference: 'সুনান ইবনে মাজাহ (৪২৫০)'
   },
   {
     id: 28,
     type: 'ayah',
     category: 'Quran',
     arabic: 'وَنُنَزِّلُ مِنَ الْقُرْآنِ مَا هُوَ شِفَاءٌ وَرَحْمَةٌ لِّلْمُؤْمِنِينَ',
-    english: '“And We send down of the Quran that which is healing and mercy for the believers.”',
-    reference: 'Surah Al-Isra (17:82)'
+    english: '“আর আমি কুরআনে এমন বিষয় অবতীর্ণ করি যা মুমিনদের জন্য রোগমুক্তি ও রহমত।”',
+    reference: 'সূরা আল-ইসরা (১৭:৮২)'
   },
   {
     id: 29,
     type: 'hadith',
     category: 'Gratitude',
     arabic: 'الطُّهُورُ شَطْرُ الإِيمَانِ، وَالْحَمْدُ لِلَّهِ تَمْلأُ الْمِيزَانَ',
-    english: '“Purity is half of faith, and Alhamdulillah (praise be to Allah) fills the balance on the Day of Judgment.”',
-    reference: 'Sahih Muslim (223)'
+    english: '“পবিত্রতা ঈমানের অর্ধেক এবং ‘আলহামদুলিল্লাহ’ পাঠ মিযানের পাল্লা পূর্ণ করে দেয়।”',
+    reference: 'সহীহ মুসলিম (২২৩)'
   },
   {
     id: 30,
     type: 'ayah',
     category: 'Tawakkul',
     arabic: 'حَسْبُنَا اللَّهُ وَنِعْمَ الْوَكِيلُ',
-    english: '“Sufficient for us is Allah, and [He is] the best Disposer of affairs.”',
-    reference: 'Surah Ali \'Imran (3:173)'
+    english: '“আমাদের জন্য আল্লাহই যথেষ্ট এবং তিনি কতই না উত্তম কর্মবিধায়ক!”',
+    reference: 'সূরা আলে ইমরান (৩:১৭৩)'
   },
 
   // 31-40: SUPREME SUPPLICATIONS & DIVINE COMPASSION
@@ -260,79 +260,79 @@ export const SPIRITUAL_COLLECTION: SpiritualWisdom[] = [
     type: 'hadith',
     category: 'Tranquility',
     arabic: 'مَثَلُ الَّذِي يَذْكُرُ رَبَّهُ وَالَّذِي لا يَذْكُرُ رَبَّهُ مَثَلُ الْحَيِّ وَالْمَيِّتِ',
-    english: '“The example of the one who remembers his Lord compared to the one who does not is like that of the living and the dead.”',
-    reference: 'Sahih al-Bukhari (6407)'
+    english: '“যে ব্যক্তি তার রবের যিকির করে আর যে যিকির করে না, তাদের উদাহরণ জীবিত ও মৃতের মতো।”',
+    reference: 'সহীহ আল-বুখারী (৬৪০৭)'
   },
   {
     id: 32,
     type: 'ayah',
     category: 'Salah & Prayer',
     arabic: 'إِنَّ الصَّلَاةَ تَنْهَىٰ عَنِ الْفَحْشَاءِ وَالْمُنكَرِ ۗ وَلَذِكْرُ اللَّهِ أَكْبَرُ',
-    english: '“Indeed, prayer prevents immorality and wrongdoing, and the remembrance of Allah is greater.”',
-    reference: 'Surah Al-\'Ankabut (29:45)'
+    english: '“নিশ্চয়ই সালাত মানুষকে অশ্লীল ও মন্দ কাজ থেকে বিরত রাখে, আর আল্লাহর স্মরণই তো সর্বশ্রেষ্ঠ।”',
+    reference: 'সূরা আল-আনকাবূত (২৯:৪৫)'
   },
   {
     id: 33,
     type: 'hadith',
     category: 'Patience',
     arabic: 'مَا يُصِيبُ الْمُسْلِمَ مِنْ نَصَبٍ وَلا وَصَبٍ وَلا هَمٍّ وَلا حُزْنٍ حَتَّى الشَّوْكَةِ يُشَاكُهَا إِلا كَفَّرَ اللَّهُ بِهَا مِنْ خَطَايَاهُ',
-    english: '“No fatigue, illness, worry, sorrow, or harm afflicts a Muslim, even the prick of a thorn, except that Allah expiates some of his sins because of it.”',
-    reference: 'Sahih al-Bukhari (5641), Sahih Muslim (2573)'
+    english: '“একজন মুসলিমের ওপর যেকোনো ক্লান্তি, রোগ, দুশ্চিন্তা কিংবা দুঃখ আসে, এমনকি তার পায়ে একটি কাঁটার আঘাতও লাগে, আল্লাহ এর বিনিময়ে তার গুনাহসমূহ ক্ষমা করে দেন।”',
+    reference: 'সহীহ আল-বুখারী (৫৬৪১), সহীহ মুসলিম'
   },
   {
     id: 34,
     type: 'ayah',
     category: 'Forgiveness',
     arabic: 'وَاسْتَغْفِرُوا اللَّهَ ۖ إِنَّ اللَّهَ غَفُورٌ رَّحِيمٌ',
-    english: '“And seek forgiveness of Allah. Indeed, Allah is Forgiving and Merciful.”',
-    reference: 'Surah Al-Muzzammil (73:20)'
+    english: '“আর আল্লাহর নিকট ক্ষমা প্রার্থনা করো। নিশ্চয়ই আল্লাহ পরম ক্ষমাশীল, পরম দয়ালু।”',
+    reference: 'সূরা আল-মুযযাম্মিল (৭৩:২০)'
   },
   {
     id: 35,
     type: 'hadith',
     category: 'Quran',
     arabic: 'الَّذِي يَقْرَأُ الْقُرْآنَ وَهُوَ مَاهِرٌ بِهِ مَعَ السَّفَرَةِ الْكِرَامِ الْبَرَرَةِ',
-    english: '“The one who recites the Quran proficiently will be with the noble, obedient angels in the hereafter.”',
-    reference: 'Sahih al-Bukhari (4937), Sahih Muslim (798)'
+    english: '“যে ব্যক্তি সুন্দর ও দক্ষভাবে কুরআন তিলাওয়াত করে, সে সম্মানিত ও অনুগত ফেরেশতাদের সাথে থাকবে।”',
+    reference: 'সহীহ আল-বুখারী (৪৯৩৭), সহীহ মুসলিম'
   },
   {
     id: 36,
     type: 'ayah',
     category: 'Tawakkul',
     arabic: 'إِن يَنصُرْكُمُ اللَّهُ فَلَا غَالِبَ لَكُمْ',
-    english: '“If Allah should aid you, no one can overcome you.”',
-    reference: 'Surah Ali \'Imran (3:160)'
+    english: '“যদি আল্লাহ তোমাদের সাহায্য করেন, তবে কেউই তোমাদের ওপর বিজয়ী হতে পারবে না।”',
+    reference: 'সূরা আলে ইমরান (৩:১৬০)'
   },
   {
     id: 37,
     type: 'hadith',
     category: 'Salah & Prayer',
     arabic: 'أَوَّلُ مَا يُحَاسَبُ بِهِ الْعَبْدُ يَوْمَ الْقِيَامَةِ مِنْ عَمَلِهِ صَلَاتُهُ',
-    english: '“The first matter that the slave will be brought to account for on the Day of Judgment is his prayer.”',
-    reference: 'Sunan an-Nasa\'i (465), Jami\' at-Tirmidhi (413)'
+    english: '“কিয়ামতের দিন বান্দার আমলের মধ্যে সর্বপ্রথম সালাতের হিসাব নেওয়া হবে।”',
+    reference: 'সুনান আন-নাসায়ী (৪৬৫), জামে আত-তিরমিযী (৪১৩)'
   },
   {
     id: 38,
     type: 'ayah',
     category: 'Tranquility',
     arabic: 'سَلَامٌ هِيَ حَتَّىٰ مَطْلَعِ الْفَجْرِ',
-    english: '“Peace it is until the emergence of dawn.”',
-    reference: 'Surah Al-Qadr (97:5)'
+    english: '“উষার উদয় হওয়া পর্যন্ত এটি কেবলই শান্তি ও নিরাপত্তা।”',
+    reference: 'সূরা আল-ক্বদর (৯৭:৫)'
   },
   {
     id: 39,
     type: 'hadith',
     category: 'Steadfastness',
     arabic: 'سَدِّدُوا وَقَارِبُوا وَأَبْشِرُوا',
-    english: '“Adopt a moderate course, aim for steadfastness, and be of good cheer!”',
-    reference: 'Sahih al-Bukhari (6463), Sahih Muslim (2818)'
+    english: '“তোমরা মধ্যমপন্থা অবলম্বন করো, সঠিক পথে থাকার চেষ্টা করো এবং সুসংবাদ গ্রহণ করো!”',
+    reference: 'সহীহ আল-বুখারী (৬৪৬৩), সহীহ মুসলিম (২৮১৮)'
   },
   {
     id: 40,
     type: 'ayah',
     category: 'Gratitude',
     arabic: 'وَإِن تَعُدُّوا نِعْمَةَ اللَّهِ لَا تُحْصُوهَا ۗ إِنَّ اللَّهَ لَغَفُورٌ رَّحِيمٌ',
-    english: '“And if you should count the favors of Allah, you could not enumerate them. Indeed, Allah is Forgiving and Merciful.”',
-    reference: 'Surah An-Nahl (16:18)'
+    english: '“আর যদি তোমরা আল্লাহর অনুগ্রহসমূহ গণনা করতে চাও, তবে কখনো তা গুনে শেষ করতে পারবে না। নিশ্চয়ই আল্লাহ পরম ক্ষমাশীল, পরম দয়ালু।”',
+    reference: 'সূরা আন-নাহল (১৬:১৮)'
   }
 ];
