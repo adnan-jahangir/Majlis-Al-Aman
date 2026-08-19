@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Majlis Al-Aman</string>
+    <string name="title_activity_main">Majlis Al-Aman</string>
+    <string name="package_name">app.majlis.alamantracker</string>
+    <string name="custom_url_scheme">app.majlis.alamantracker</string>
+</resources>
