@@ -58,13 +58,24 @@ router.get('/', (req, res) => {
 
     // Calculate current and next prayer
     const currentPrayerName = prayerTimes.currentPrayer();
-    const nextPrayerName = prayerTimes.nextPrayer();
-    const nextPrayerTime = prayerTimes.timeForPrayer(nextPrayerName);
+    let nextPrayerName = prayerTimes.nextPrayer();
+    let nextPrayerTime = null;
+    let isTomorrow = false;
+
+    if (nextPrayerName && nextPrayerName !== 'none') {
+      nextPrayerTime = prayerTimes.timeForPrayer(nextPrayerName);
+    } else {
+      const tomorrow = new Date(date.getTime() + 24 * 60 * 60 * 1000);
+      const tomorrowTimes = new PrayerTimes(coordinates, tomorrow, params);
+      nextPrayerName = 'fajr';
+      nextPrayerTime = tomorrowTimes.fajr;
+      isTomorrow = true;
+    }
 
     let nextPrayerObj = null;
-    if (nextPrayerName && nextPrayerName !== 'none' && nextPrayerTime) {
+    if (nextPrayerTime) {
       nextPrayerObj = {
-        name: nextPrayerName.charAt(0).toUpperCase() + nextPrayerName.slice(1),
+        name: (nextPrayerName.charAt(0).toUpperCase() + nextPrayerName.slice(1)) + (isTomorrow ? ' (Tomorrow)' : ''),
         time: format(nextPrayerTime, 'hh:mm a'),
         rawTime: nextPrayerTime.toISOString(),
         remainingMs: Math.max(0, nextPrayerTime.getTime() - new Date().getTime())

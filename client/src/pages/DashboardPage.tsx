@@ -28,6 +28,7 @@ import {
   QuranResponse, 
   CalculatedPrayerTimes 
 } from '../types';
+import { calculateLocalPrayerTimes } from '../services/prayerTimeService';
 import { CircularProgress } from '../components/CircularProgress';
 import { PrayerCard } from '../components/PrayerCard';
 import { PrayerConfirmModal } from '../components/PrayerConfirmModal';
@@ -117,16 +118,13 @@ export const DashboardPage: React.FC<{ onOpenTasbih?: () => void; onOpenQibla?: 
     showToast({ message: 'Ayah / Hadith copied to clipboard! 📋', type: 'success' });
   };
 
-  // Fetch dynamic astronomical prayer times based on exact GPS coordinates
-  const fetchTimesForCoords = useCallback(async (lat: number, lng: number, method?: string, madhab?: string) => {
+  // Calculate real-time dynamic astronomical prayer times based on exact GPS coordinates
+  const fetchTimesForCoords = useCallback((lat: number, lng: number, method?: string, madhab?: string) => {
     try {
-      const timesRes = await api.getPrayerTimes({
-        latitude: lat,
-        longitude: lng,
-        method: method || settings?.calc_method || 'Karachi',
-        madhab: madhab || settings?.madhab || 'Hanafi'
-      });
-      setCalculatedTimes(timesRes);
+      const currentMethod = method || settings?.calc_method || 'Karachi';
+      const currentMadhab = madhab || settings?.madhab || 'Hanafi';
+      const times = calculateLocalPrayerTimes(lat, lng, currentMethod, currentMadhab, new Date());
+      setCalculatedTimes(times);
     } catch (err) {
       console.error('Error calculating prayer times:', err);
     }
@@ -165,7 +163,7 @@ export const DashboardPage: React.FC<{ onOpenTasbih?: () => void; onOpenQibla?: 
         setActiveLocation({ city: detectedCity, lat, lng });
 
         // Immediately calculate prayer times for exact GPS coordinates
-        await fetchTimesForCoords(lat, lng);
+        fetchTimesForCoords(lat, lng);
 
         // Update settings in database if logged in
         if (isAuthenticated && updateUserSettings) {
@@ -213,7 +211,7 @@ export const DashboardPage: React.FC<{ onOpenTasbih?: () => void; onOpenQibla?: 
         lat,
         lng
       });
-      await fetchTimesForCoords(lat, lng);
+      fetchTimesForCoords(lat, lng);
     } catch (err) {
       console.error('Error loading dashboard:', err);
     } finally {
@@ -226,27 +224,41 @@ export const DashboardPage: React.FC<{ onOpenTasbih?: () => void; onOpenQibla?: 
     handleAutoDetectGPS(false);
   }, [isAuthenticated]);
 
-  // Live countdown to next prayer
+  // Real-time live 1-second interval clock & countdown to next prayer
   useEffect(() => {
-    if (!calculatedTimes?.nextPrayer?.remainingMs) return;
+    const lat = settings?.latitude || activeLocation.lat;
+    const lng = settings?.longitude || activeLocation.lng;
+    const currentMethod = settings?.calc_method || 'Karachi';
+    const currentMadhab = settings?.madhab || 'Hanafi';
 
-    let targetMs = Date.now() + calculatedTimes.nextPrayer.remainingMs;
+    const tick = () => {
+      const times = calculateLocalPrayerTimes(lat, lng, currentMethod, currentMadhab, new Date());
+      setCalculatedTimes(times);
 
-    const interval = setInterval(() => {
-      const diff = targetMs - Date.now();
-      if (diff <= 0) {
-        setCountdownStr('Now');
-        clearInterval(interval);
-      } else {
-        const hours = Math.floor(diff / (1000 * 60 * 60));
-        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        const secs = Math.floor((diff % (1000 * 60)) / 1000);
-        setCountdownStr(`${hours > 0 ? `${hours}h ` : ''}${mins}m ${secs}s`);
+      if (times.nextPrayer) {
+        const diff = times.nextPrayer.remainingMs;
+        if (diff <= 0) {
+          setCountdownStr('Now');
+        } else {
+          const hours = Math.floor(diff / (1000 * 60 * 60));
+          const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+          const secs = Math.floor((diff % (1000 * 60)) / 1000);
+          if (hours > 0) {
+            setCountdownStr(`${hours}h ${mins}m ${secs}s`);
+          } else if (mins > 0) {
+            setCountdownStr(`${mins}m ${secs}s`);
+          } else {
+            setCountdownStr(`${secs}s`);
+          }
+        }
       }
-    }, 1000);
+    };
+
+    tick();
+    const interval = setInterval(tick, 1000);
 
     return () => clearInterval(interval);
-  }, [calculatedTimes]);
+  }, [settings?.latitude, settings?.longitude, settings?.calc_method, settings?.madhab, activeLocation.lat, activeLocation.lng]);
 
   // Handle Quick Toggle (Works for Guest & Signed-in Users Instantly!)
   const handleQuickToggle = async (prayerName: PrayerName, e: React.MouseEvent) => {
@@ -467,7 +479,11 @@ export const DashboardPage: React.FC<{ onOpenTasbih?: () => void; onOpenQibla?: 
                   <span className="text-xs text-amber-300 font-semibold">{calculatedTimes.nextPrayer.time}</span>
                 </div>
                 <p className="text-[11px] text-slate-400">
-                  in <span className="text-emerald-400 font-bold tracking-wide">{countdownStr || 'calculating...'}</span>
+                  {countdownStr === 'Now' ? (
+                    <span className="text-emerald-400 font-bold tracking-wide">Time has entered ✓</span>
+                  ) : (
+                    <>in <span className="text-emerald-400 font-bold tracking-wide">{countdownStr || 'calculating...'}</span></>
+                  )}
                 </p>
               </div>
             </div>
@@ -798,17 +814,8 @@ export const DashboardPage: React.FC<{ onOpenTasbih?: () => void; onOpenQibla?: 
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {displayPrayers.map((prayer) => {
-            const rawIso = (calculatedTimes?.rawTimes as any)?.[prayer.name];
-            let time = calculatedTimes?.times[prayer.name] || '';
-            if (rawIso) {
-              try {
-                const d = new Date(rawIso);
-                if (!isNaN(d.getTime())) {
-                  time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
-                }
-              } catch (e) {}
-            }
-            const isNext = calculatedTimes?.nextPrayer?.name.toLowerCase() === prayer.name.toLowerCase();
+            const time = calculatedTimes?.times[prayer.name] || '';
+            const isNext = !!calculatedTimes?.nextPrayer?.name.toLowerCase().startsWith(prayer.name.toLowerCase());
 
             return (
               <PrayerCard
