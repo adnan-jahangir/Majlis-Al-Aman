@@ -18,7 +18,7 @@ router.get('/', authenticateToken, async (req, res) => {
       settings = await get('SELECT * FROM user_settings WHERE user_id = ?', [userId]);
     }
 
-    res.json({ settings });
+    res.json({ settings, ...settings });
   } catch (error) {
     console.error('Get settings error:', error);
     res.status(500).json({ error: 'Server error fetching settings' });
@@ -138,7 +138,7 @@ router.put('/', authenticateToken, async (req, res) => {
 
     const updatedSettings = await get('SELECT * FROM user_settings WHERE user_id = ?', [userId]);
 
-    res.json({ message: 'Settings saved successfully', settings: updatedSettings });
+    res.json({ message: 'Settings saved successfully', settings: updatedSettings, ...updatedSettings });
   } catch (error) {
     console.error('Update settings error:', error);
     res.status(500).json({ error: 'Server error updating settings' });

@@ -90,7 +90,7 @@ router.get('/users', async (req, res) => {
 });
 
 // Toggle user disabled status
-router.put('/users/:id/toggle-status', async (req, res) => {
+const handleToggleUser = async (req, res) => {
   try {
     const targetUserId = req.params.id;
     if (parseInt(targetUserId, 10) === req.user.id) {
@@ -102,7 +102,15 @@ router.put('/users/:id/toggle-status', async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const newStatus = user.is_disabled ? 0 : 1;
+    let newStatus;
+    if (req.body && typeof req.body.isDisabled === 'boolean') {
+      newStatus = req.body.isDisabled ? 1 : 0;
+    } else if (req.body && typeof req.body.isDisabled === 'number') {
+      newStatus = req.body.isDisabled ? 1 : 0;
+    } else {
+      newStatus = user.is_disabled ? 0 : 1;
+    }
+
     await run('UPDATE users SET is_disabled = ? WHERE id = ?', [newStatus, targetUserId]);
 
     res.json({
@@ -113,7 +121,12 @@ router.put('/users/:id/toggle-status', async (req, res) => {
     console.error('Toggle user status error:', error);
     res.status(500).json({ error: 'Server error toggling user status' });
   }
-});
+};
+
+router.put('/users/:id/toggle-status', handleToggleUser);
+router.post('/users/:id/toggle-status', handleToggleUser);
+router.post('/users/:id/disable', handleToggleUser);
+router.put('/users/:id/disable', handleToggleUser);
 
 // Manage Announcements
 router.get('/announcements', async (req, res) => {

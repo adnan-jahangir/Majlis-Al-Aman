@@ -19,7 +19,7 @@ import { SettingsPage } from './pages/SettingsPage';
 import { AdminPage } from './pages/AdminPage';
 
 const MainApp: React.FC = () => {
-  const { user, isAuthenticated, isLoading, settings, demoLogin } = useAuth();
+  const { user, isAuthenticated, isLoading, settings, demoLogin, refreshMe } = useAuth();
   const { showToast } = useToast();
 
   const [activeTab, setActiveTab] = useState<string>('dashboard');
@@ -146,8 +146,10 @@ const MainApp: React.FC = () => {
         isOpen={isQuranModalOpen}
         onClose={() => setIsQuranModalOpen(false)}
         onSuccess={() => {
+          refreshMe();
           showToast({ message: 'Quran reading logged! 📖', type: 'success' });
         }}
+        defaultPages={settings?.daily_quran_goal || 10}
       />
 
       <TasbihModal isOpen={isTasbihOpen} onClose={() => setIsTasbihOpen(false)} />

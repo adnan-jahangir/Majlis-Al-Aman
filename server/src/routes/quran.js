@@ -130,7 +130,7 @@ router.get('/surahs', (req, res) => {
 });
 
 // Get Quran stats and today summary
-router.get('/', authenticateToken, async (req, res) => {
+router.get(['/', '/summary'], authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
     const date = req.query.date || format(new Date(), 'yyyy-MM-dd');
@@ -218,10 +218,45 @@ router.post('/log', authenticateToken, async (req, res) => {
     // Refresh streak and check achievements
     const streakInfo = await updateStreakAndAchievements(userId);
 
+    // Fetch updated summary for immediate UI sync
+    const settings = await get('SELECT daily_quran_goal FROM user_settings WHERE user_id = ?', [userId]);
+    const dailyGoal = (settings && settings.daily_quran_goal) || 10;
+    const todayLogs = await query(
+      'SELECT id, surah_number, surah_name, pages_read, reading_duration_mins, notes, created_at FROM quran_records WHERE user_id = ? AND date = ? ORDER BY id DESC',
+      [userId, targetDate]
+    );
+    const todayPages = todayLogs.reduce((acc, curr) => acc + curr.pages_read, 0);
+    const todayDuration = todayLogs.reduce((acc, curr) => acc + (curr.reading_duration_mins || 0), 0);
+    const totalStats = await get(
+      `SELECT SUM(pages_read) as total_pages, COUNT(DISTINCT date) as total_reading_days, SUM(reading_duration_mins) as total_duration_mins FROM quran_records WHERE user_id = ?`,
+      [userId]
+    );
+    const totalPages = (totalStats && totalStats.total_pages) || 0;
+    const totalReadingDays = (totalStats && totalStats.total_reading_days) || 0;
+
+    const summary = {
+      date: targetDate,
+      dailyGoal,
+      todayPages,
+      todayDuration,
+      todayLogs,
+      hasReadToday: todayPages > 0,
+      goalPercentage: Math.min(100, Math.round((todayPages / dailyGoal) * 100)),
+      totalStats: {
+        totalPages,
+        totalReadingDays,
+        avgPagesPerDay: totalReadingDays > 0 ? (totalPages / totalReadingDays).toFixed(1) : '0',
+        totalDurationMins: (totalStats && totalStats.total_duration_mins) || 0,
+        khatamPercentage: ((totalPages % 604) / 604 * 100).toFixed(1),
+        completedKhatams: Math.floor(totalPages / 604)
+      }
+    };
+
     res.status(201).json({
       message: 'Quran reading logged successfully',
       id: result.id,
-      streak: streakInfo
+      streak: streakInfo,
+      summary
     });
   } catch (error) {
     console.error('Add quran log error:', error);
